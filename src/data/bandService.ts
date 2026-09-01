@@ -1,33 +1,68 @@
 import type { AvailabilityStatus, Band } from '../types/band';
-import { seedBand } from './seed';
+import { supabase } from './supabaseClient';
 
-const storageKey = (bandId: string) => `jam-planner:band:${bandId}`;
-
-function loadBand(bandId: string): Band {
-  try {
-    const raw = localStorage.getItem(storageKey(bandId));
-    if (raw) {
-      return JSON.parse(raw) as Band;
-    }
-  } catch {
-    // fall through to seed data
-  }
-  return seedBand;
+interface RawGig {
+  id: string;
+  date: string;
+  label: string;
 }
 
-function persistBand(band: Band): void {
-  try {
-    localStorage.setItem(storageKey(band.id), JSON.stringify(band));
-  } catch (error) {
-    console.warn('Failed to persist band data', error);
-  }
+interface RawAvailability {
+  member_id: string;
+  date: string;
+  status: AvailabilityStatus;
+}
+
+interface RawPeriod {
+  id: string;
+  name: string;
+  start_date: string;
+  end_date: string;
+  gigs: RawGig[];
+  availability: RawAvailability[];
+}
+
+interface RawBand {
+  id: string;
+  name: string;
+  members: { id: string; name: string }[];
+  periods: RawPeriod[];
+}
+
+function mapBand(raw: RawBand): Band {
+  return {
+    id: raw.id,
+    name: raw.name,
+    members: raw.members,
+    periods: raw.periods.map((period) => ({
+      id: period.id,
+      name: period.name,
+      startDate: period.start_date,
+      endDate: period.end_date,
+      gigs: period.gigs,
+      availability: period.availability.map((a) => ({
+        memberId: a.member_id,
+        date: a.date,
+        status: a.status,
+      })),
+    })),
+  };
 }
 
 export async function getBand(bandId: string): Promise<Band> {
-  if (bandId !== seedBand.id) {
-    throw new Error(`Unknown band: ${bandId}`);
+  const { data, error } = await supabase
+    .from('bands')
+    .select(
+      'id, name, members(id,name), periods(id,name,start_date,end_date,gigs(id,date,label),availability(member_id,date,status))',
+    )
+    .eq('id', bandId)
+    .single();
+
+  if (error) {
+    throw new Error(`Failed to load band "${bandId}": ${error.message}`);
   }
-  return loadBand(bandId);
+
+  return mapBand(data as RawBand);
 }
 
 export async function setMemberAvailability(
@@ -37,22 +72,24 @@ export async function setMemberAvailability(
   date: string,
   status: AvailabilityStatus,
 ): Promise<Band> {
-  const band = loadBand(bandId);
-  const periods = band.periods.map((period) => {
-    if (period.id !== periodId) {
-      return period;
+  if (status === 'available') {
+    const { error } = await supabase
+      .from('availability')
+      .delete()
+      .match({ period_id: periodId, member_id: memberId, date });
+
+    if (error) {
+      throw new Error(`Failed to update availability: ${error.message}`);
     }
+  } else {
+    const { error } = await supabase
+      .from('availability')
+      .upsert({ period_id: periodId, member_id: memberId, date, status });
 
-    const withoutRecord = period.availability.filter(
-      (a) => !(a.memberId === memberId && a.date === date),
-    );
-    const availability =
-      status === 'available' ? withoutRecord : [...withoutRecord, { memberId, date, status }];
+    if (error) {
+      throw new Error(`Failed to update availability: ${error.message}`);
+    }
+  }
 
-    return { ...period, availability };
-  });
-
-  const updated: Band = { ...band, periods };
-  persistBand(updated);
-  return updated;
+  return getBand(bandId);
 }

@@ -7,11 +7,18 @@ import { toIsoDate } from './utils/calendar';
 
 function App() {
   const [band, setBand] = useState<Band | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    getBand('main-band').then(setBand);
+    getBand('main-band')
+      .then(setBand)
+      .catch((err: Error) => setError(err.message));
   }, []);
+
+  if (error) {
+    return <div className="loading">שגיאה בטעינת הנתונים: {error}</div>;
+  }
 
   if (!band) {
     return <div className="loading">טוען...</div>;
@@ -23,9 +30,9 @@ function App() {
     if (!selectedDate) {
       return;
     }
-    setMemberAvailability(band.id, period.id, memberId, toIsoDate(selectedDate), nextStatus).then(
-      setBand,
-    );
+    setMemberAvailability(band.id, period.id, memberId, toIsoDate(selectedDate), nextStatus)
+      .then(setBand)
+      .catch((err: Error) => setError(err.message));
   };
 
   return (
