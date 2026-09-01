@@ -4,21 +4,27 @@ Sync the groove: A smart rehearsal scheduling tool to help bands find the perfec
 A collaborative scheduling tool designed to help bands and musical ensembles sync their availability and plan rehearsals efficiently.
 
 ## Current State
-This project currently serves as a static, visual availability calendar built to coordinate a 7-piece band leading up to a specific gig. It allows band members to quickly see overlapping free days and missing personnel.
+Jam Planner is a React + TypeScript single-page app backed by a shared Supabase database. Any
+band member can open the calendar, see everyone's availability at a glance, and edit their own
+days directly — everyone sees the same live picture instead of a static, manually-updated file.
+It's mobile-friendly and deployed at:
+
+**https://nizaninbar.github.io/jam-planner/**
+
+For architecture, data model, and setup details, see [docs/TECHNICAL.md](docs/TECHNICAL.md).
 
 ## Future Vision
-Jam Planner will always be, at its core, a visual availability calendar — the fastest way for a band to see at a glance who's free and when. From there it will evolve in small, incremental steps toward a full rehearsal management system.
+Jam Planner will always be, at its core, a visual availability calendar — the fastest way for a band to see at a glance who's free and when. From there it's evolving in small, incremental steps toward a full rehearsal management system.
 
-### Step 1 (current focus)
-* Define the calendar's date range dynamically (no more hardcoded months)
-* Define the band's members dynamically (no more names hardcoded into markup)
-* Refactor into a modern React SPA (no more hand-written HTML/CSS per day)
-* Shape the client-side data model to anticipate a future backend — multiple bands, each with its own members, availability, and periods/gigs — even though everything still runs client-side with no backend or auth yet
+### Done
+* Dynamic date range and band members (no more hardcoded data)
+* Modern React SPA, mobile-friendly
+* Each member can edit their own availability directly on the calendar
+* Shared, single source of truth via a Supabase backend (no more per-browser localStorage)
 
-### Later steps
-* Let each member edit their own availability directly (no more manual editing of the file)
+### Next up
+* User authentication for band members, so edits are attributed and each member can only change their own availability
 * Replace the binary available / not-available status with a middle state (e.g. available, prefer not, not available)
-* User authentication for band members
 * Automated optimal rehearsal time suggestions
 * Gig and setlist management
 
