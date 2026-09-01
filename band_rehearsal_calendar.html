@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>לוח חזרות - הופעה אוקטובר 2026 (מעודכן)</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap');
+        
+        :root {
+            --bg-main: #121212;
+            --bg-card: #181818;
+            --bg-hover: #282828;
+            --text-main: #FFFFFF;
+            --text-muted: #A7A7A7;
+            --accent-green: #1DB954; 
+            --accent-red: #E91429;
+            --accent-gold: #F5C518;
+            --border-color: #333;
+        }
+
+        body {
+            font-family: 'Heebo', sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            margin: 0;
+            padding: 40px 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .calendar-container {
+            max-width: 1000px;
+            width: 100%;
+            background-color: var(--bg-card);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin: 0 0 10px 0;
+            font-weight: 800;
+        }
+
+        .header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            margin: 0;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            background: var(--bg-hover);
+            padding: 8px 16px;
+            border-radius: 20px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .month-section {
+            margin-bottom: 50px;
+        }
+
+        .month-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 12px;
+        }
+
+        .day-name {
+            text-align: center;
+            color: var(--text-muted);
+            font-weight: 500;
+            padding-bottom: 10px;
+            font-size: 0.95rem;
+        }
+
+        .day-cell {
+            background-color: var(--bg-hover);
+            border-radius: 8px;
+            min-height: 110px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s, background-color 0.2s;
+            border-right: 4px solid transparent;
+        }
+
+        .day-cell:not(.empty):hover {
+            transform: translateY(-2px);
+            background-color: #333;
+        }
+
+        .day-cell.empty {
+            background-color: transparent;
+            border: none;
+        }
+
+        .date-number {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .status-all-clear {
+            border-right-color: var(--accent-green);
+        }
+        
+        .status-all-clear .status-text {
+            color: var(--accent-green);
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: auto;
+        }
+
+        .status-missing {
+            border-right-color: var(--accent-red);
+            background-color: rgba(233, 20, 41, 0.05);
+        }
+
+        .status-missing .missing-names {
+            color: #ff8a8a;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            font-weight: 500;
+            margin-top: 4px;
+        }
+
+        .status-gig {
+            border: 2px solid var(--accent-gold);
+            background-color: rgba(245, 197, 24, 0.1);
+        }
+
+        .status-gig .date-number {
+            color: var(--accent-gold);
+        }
+
+        .status-gig .gig-label {
+            color: var(--accent-gold);
+            font-weight: 800;
+            font-size: 1.1rem;
+            margin-top: auto;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .day-name {
+                display: none;
+            }
+            .day-cell {
+                min-height: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="calendar-container">
+        
+        <div class="header">
+            <h1>🗓️ לוח זמינות להקה</h1>
+            <p>הכנות להופעה - ספטמבר / אוקטובר 2026 (מעודכן)</p>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="dot" style="background-color: var(--accent-green);"></div>
+                הרכב מלא (פנוי לחזרה)
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background-color: var(--accent-red);"></div>
+                חסרים נגנים
+            </div>
+            <div class="legend-item">
+                <div class="dot" style="background-color: var(--accent-gold);"></div>
+                יום ההופעה 🎸
+            </div>
+        </div>
+
+        <!-- ספטמבר -->
+        <div class="month-section">
+            <h2 class="month-title">ספטמבר 2026</h2>
+            <div class="grid">
+                <div class="day-name">ראשון</div>
+                <div class="day-name">שני</div>
+                <div class="day-name">שלישי</div>
+                <div class="day-name">רביעי</div>
+                <div class="day-name">חמישי</div>
+                <div class="day-name">שישי</div>
+                <div class="day-name">שבת</div>
+
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+
+                <div class="day-cell status-all-clear"><div class="date-number">1</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">2</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">3</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-missing"><div class="date-number">4</div><div class="missing-names">❌ אלון לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">5</div><div class="missing-names">❌ אלון לא זמין</div></div>
+                
+                <div class="day-cell status-missing"><div class="date-number">6</div><div class="missing-names">❌ אלון לא זמין</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">7</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-missing"><div class="date-number">8</div><div class="missing-names">❌ מיכל לא זמינה</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">9</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-missing"><div class="date-number">10</div><div class="missing-names">❌ דודו לא זמין</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">11</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">12</div><div class="status-text">✓ כולם פנויים</div></div>
+
+                <div class="day-cell status-all-clear"><div class="date-number">13</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">14</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">15</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">16</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">17</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-missing"><div class="date-number">18</div><div class="missing-names">❌ יניב לא זמין</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">19</div><div class="status-text">✓ כולם פנויים</div></div>
+
+                <div class="day-cell status-all-clear"><div class="date-number">20</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">21</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">22</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">23</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">24</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">25</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">26</div><div class="status-text">✓ כולם פנויים</div></div>
+
+                <div class="day-cell status-missing"><div class="date-number">27</div><div class="missing-names">❌ דודו לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">28</div><div class="missing-names">❌ דודו לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">29</div><div class="missing-names">❌ דודו לא זמין<br>❌ ניצן לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">30</div><div class="missing-names">❌ דודו לא זמין<br>❌ ניצן לא זמין</div></div>
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+            </div>
+        </div>
+
+        <!-- אוקטובר -->
+        <div class="month-section">
+            <h2 class="month-title">אוקטובר 2026</h2>
+            <div class="grid">
+                <div class="day-name">ראשון</div>
+                <div class="day-name">שני</div>
+                <div class="day-name">שלישי</div>
+                <div class="day-name">רביעי</div>
+                <div class="day-name">חמישי</div>
+                <div class="day-name">שישי</div>
+                <div class="day-name">שבת</div>
+
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+                <div class="day-cell empty"></div>
+
+                <div class="day-cell status-missing"><div class="date-number">1</div><div class="missing-names">❌ דודו לא זמין<br>❌ ניצן לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">2</div><div class="missing-names">❌ דודו לא זמין<br>❌ ניצן לא זמין</div></div>
+                <div class="day-cell status-missing"><div class="date-number">3</div><div class="missing-names">❌ ניצן לא זמין</div></div>
+                
+                <div class="day-cell status-missing"><div class="date-number">4</div><div class="missing-names">❌ ניצן לא זמין</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">5</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">6</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-all-clear"><div class="date-number">7</div><div class="status-text">✓ כולם פנויים</div></div>
+                <div class="day-cell status-gig"><div class="date-number">8</div><div class="gig-label"><span>🎸</span> הופעה!</div></div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
