@@ -20,7 +20,9 @@ create table if not exists gigs (
   id text primary key,
   band_id text not null references bands(id) on delete cascade,
   date date not null,
-  label text not null
+  label text not null,
+  type text not null default 'gig' check (type in ('gig', 'rehearsal-guided', 'rehearsal-band-only')),
+  location text
 );
 
 create table if not exists availability (
@@ -46,6 +48,8 @@ create policy "public read availability" on availability for select using (true)
 
 create policy "public write availability" on availability
   for all using (true) with check (true);
+
+create policy "public write gigs" on gigs for all using (true) with check (true);
 
 -- Seed data, transcribed from src/data/seed.ts
 insert into bands (id, name) values

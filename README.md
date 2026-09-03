@@ -21,11 +21,13 @@ Jam Planner will always be, at its core, a visual availability calendar — the 
 * Modern React SPA, mobile-friendly
 * Each member can edit their own availability directly on the calendar
 * Shared, single source of truth via a Supabase backend (no more per-browser localStorage)
+* Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
 
 ### Next up
 * User authentication for band members, so edits are attributed and each member can only change their own availability
 * Replace the binary available / not-available status with a middle state (e.g. available, prefer not, not available)
 * Automated optimal rehearsal time suggestions
-* Gig and setlist management
+* Setlist management
+* Longer-term: grow into a full band app (playlists, past recordings, etc.), with this calendar as one feature among several
 
 Stay tuned!

@@ -12,21 +12,30 @@ No test framework or linter beyond `oxlint` is set up yet.
 The domain model (`src/types/band.ts`) is the source of truth for shape:
 
 ```ts
-Band { id, name, members: Member[], gigs: Gig[], availability: Availability[] }
+Band { id, name, members: Member[], events: Event[], availability: Availability[] }
 Member { id, name }
-Gig { id, date, label }
+EventType = 'gig' | 'rehearsal-guided' | 'rehearsal-band-only'
+Event { id, date, type: EventType, label, location? }
 Availability { memberId, date, status: 'available' | 'unavailable' }
 ```
 
-`gigs` and `availability` are band-wide — not scoped to any date range — which is what lets the
-calendar navigate freely to any month. `availability` only stores records that deviate from the
-default: a member with no record for a given date is assumed available. This keeps the common
-case (everyone's free) cheap to store and render.
+`Event` generalizes what used to be a gig-only concept - any dated thing (a gig or either kind of
+rehearsal) with a label and an optional location. `events` and `availability` are band-wide - not
+scoped to any date range - which is what lets the calendar navigate freely to any month.
+`availability` only stores records that deviate from the default: a member with no record for a
+given date is assumed available. This keeps the common case (everyone's free) cheap to store and
+render.
 
 Supabase tables (`supabase/schema.sql`) mirror this almost 1:1: `bands`, `members`, `gigs`,
-`availability`, using the same string ids as primary keys (e.g. `main-band`, `nitzan`). Postgres
-`date` columns round-trip as plain `'YYYY-MM-DD'` strings through PostgREST, so no date parsing
-happens at the network boundary.
+`availability`, using the same string ids as primary keys (e.g. `main-band`, `nitzan`). The table
+backing `Event` is still named `gigs` at the DB level - it predates the generalization, and
+renaming a live table wasn't worth the risk for a purely cosmetic gain; only the app-level type
+name changed. Postgres `date` columns round-trip as plain `'YYYY-MM-DD'` strings through
+PostgREST, so no date parsing happens at the network boundary.
+
+User-created events need a real primary key, so `bandService.createEvent` generates one with
+`crypto.randomUUID()` client-side rather than relying on a DB default - the original seeded gig
+still uses its old slug id (`gig-2026-10-08`), and both coexist fine since `gigs.id` is just `text`.
 
 There used to be a `Period` concept (a named date range gigs/availability belonged to) — it was
 removed once the calendar became free-navigating, since nothing displayed a period's name/range
@@ -43,25 +52,31 @@ embed under `bands` ambiguous (PGRST201). `bandService.ts`'s query disambiguates
 `members!members_band_id_fkey(id,name)`, pointing PostgREST at the direct FK instead of letting it
 guess.
 
-The data model already supports multiple bands (each with its own members/gigs/availability), but
-the app currently only ever renders one (`App.tsx` hardcodes `getBand('main-band')`). Multi-band UI
-(e.g. a band switcher) isn't built yet.
+The data model already supports multiple bands (each with its own members/events/availability),
+but the app currently only ever renders one (`App.tsx` hardcodes `getBand('main-band')`).
+Multi-band UI (e.g. a band switcher) isn't built yet.
 
 ## Data flow
 - `src/data/supabaseClient.ts` — creates the Supabase client from env vars.
-- `src/data/bandService.ts` — the *only* file that talks to Supabase. `getBand(bandId)` runs one
-  nested PostgREST query (band → members, gigs, availability) and maps the snake_case rows into
-  the `Band` shape above. `setMemberAvailability(...)` deletes the availability row when a member
-  is set back to available (matching the "no record = available" convention) or upserts one
-  otherwise (targeting the `(band_id, member_id, date)` unique constraint explicitly via
-  `onConflict`), then re-fetches and returns the updated `Band`.
-- `src/utils/calendar.ts` — pure functions that derive what a day looks like: `getDayStatus` (gig /
-  all-clear / missing-members for a given date) and `getMemberStatus`. All the "what does this day
+- `src/data/bandService.ts` — the *only* file that talks to Supabase.
+  - `getBand(bandId)` runs one nested PostgREST query (band → members, gigs, availability) and
+    maps the snake_case rows into the `Band` shape above.
+  - `setMemberAvailability(...)` deletes the availability row when a member is set back to
+    available (matching the "no record = available" convention) or upserts one otherwise
+    (targeting the `(band_id, member_id, date)` unique constraint explicitly via `onConflict`).
+  - `createEvent(...)` / `deleteEvent(...)` insert/delete a row in `gigs`.
+  - All four re-fetch via `getBand` and return the fresh `Band`, so the UI always renders from one
+    consistent snapshot rather than patching local state by hand.
+- `src/utils/calendar.ts` — pure functions that derive what a day looks like: `getDayStatus`
+  (event / all-clear / missing-members for a given date, with an event on a date taking over the
+  cell's display regardless of who's missing) and `getMemberStatus`. All the "what does this day
   look like" logic lives here, not scattered across components.
 - `src/components/Calendar.tsx` — owns `visibleMonth` state (defaults to today's real month) and
   renders one `MonthGrid` at a time with `‹ הקודם` / `היום` / `הבא ›` navigation buttons. Each
-  `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus`; clicking a day opens
-  `DayEditorModal`, which lists every member with an available/unavailable toggle for that date.
+  `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus` (distinct color/icon per
+  `EventType` - gold 🎸 for a gig, blue 🎤/🎶 for the two rehearsal kinds). Clicking a day opens
+  `DayEditorModal`, which shows/creates/deletes that date's event (if any) above the list of every
+  member's available/unavailable toggle for that date.
 
 No component imports Supabase directly — swapping the backend again in the future should only
 mean changing `bandService.ts`.
@@ -76,9 +91,10 @@ mean changing `bandService.ts`.
 
 ## Security model
 There is no authentication yet. Every table's Row Level Security policy (`supabase/schema.sql`) is
-fully open — anyone with the anon key can read and write any row. This is the same exposure the
-previous localStorage-only version had (anyone editing the page could change anyone's status); the
-data is just shared now instead of siloed per browser.
+fully open — anyone with the anon key can read and write any row (`gigs` included, once the app
+started creating/deleting events from the UI instead of only ever being seeded via SQL). This is
+the same exposure the previous localStorage-only version had (anyone editing the page could change
+anyone's status); the data is just shared now instead of siloed per browser.
 
 The Supabase anon/publishable key is meant to be public — it ends up in the built JS bundle and is
 visible to anyone who opens the site. RLS policies are the actual access control, not the key's

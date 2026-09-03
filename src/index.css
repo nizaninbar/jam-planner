@@ -9,6 +9,7 @@
   --accent-green: #1db954;
   --accent-red: #e91429;
   --accent-gold: #f5c518;
+  --accent-blue: #4f9dde;
   --border-color: #333;
   color-scheme: dark;
 }
@@ -93,6 +94,10 @@ body {
 
 .dot-gold {
   background-color: var(--accent-gold);
+}
+
+.dot-blue {
+  background-color: var(--accent-blue);
 }
 
 .month-nav {
@@ -222,6 +227,27 @@ body {
   gap: 4px;
 }
 
+.status-rehearsal {
+  border: 2px solid var(--accent-blue);
+  background-color: rgba(79, 157, 222, 0.1);
+}
+
+.status-rehearsal .date-number {
+  color: var(--accent-blue);
+}
+
+.status-rehearsal .gig-label {
+  color: var(--accent-blue);
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-top: auto;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -266,6 +292,66 @@ body {
   font-size: 1.1rem;
   cursor: pointer;
   padding: 10px;
+}
+
+.modal-divider {
+  border-top: 1px solid var(--border-color);
+  margin: 12px 0;
+}
+
+.event-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 0;
+}
+
+.event-info-label {
+  font-weight: 700;
+  color: var(--accent-blue);
+}
+
+.event-info-location {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-top: 4px;
+}
+
+.add-event-btn {
+  width: 100%;
+  background: var(--bg-hover);
+  color: var(--accent-blue);
+  border: 1px dashed var(--accent-blue);
+  border-radius: 12px;
+  padding: 10px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 12px;
+}
+
+.event-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.event-form select,
+.event-form input {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+.event-form-actions {
+  display: flex;
+  gap: 8px;
 }
 
 .modal-row {

@@ -11,7 +11,11 @@ export function Legend() {
       </div>
       <div className="legend-item">
         <div className="dot dot-gold" />
-        יום ההופעה 🎸
+        הופעה 🎸
+      </div>
+      <div className="legend-item">
+        <div className="dot dot-blue" />
+        חזרה 🎤
       </div>
     </div>
   );

@@ -24,10 +24,10 @@ React + TypeScript SPA (Vite). RTL Hebrew UI, dark theme (`src/index.css`). Data
 yet; that's the seam where auth will later tighten each policy).
 
 Data flows one direction:
-- `src/types/band.ts` — the domain model: a `Band` has `Member[]`, `Gig[]`, and `Availability[]` (member+date unavailability records — absence of a record means available). Availability and gigs are band-wide, not scoped to any date range.
+- `src/types/band.ts` — the domain model: a `Band` has `Member[]`, `Event[]`, and `Availability[]` (member+date unavailability records — absence of a record means available). An `Event` is a dated gig or rehearsal (`EventType`), with an optional `location`. Events and availability are band-wide, not scoped to any date range.
 - `src/data/supabaseClient.ts` — the Supabase client, built from the env vars above.
-- `src/data/bandService.ts` — `getBand(id)` / `setMemberAvailability(...)` are the only files that talk to Supabase; everything else works with the plain `Band` shape and doesn't know or care where the data comes from.
-- `src/utils/calendar.ts` — pure functions deriving what a day looks like: `getDayStatus` (gig / all-clear / missing-members) and `getMemberStatus`. Business logic lives here, not in components.
+- `src/data/bandService.ts` — `getBand(id)` / `setMemberAvailability(...)` / `createEvent(...)` / `deleteEvent(...)` are the only functions that talk to Supabase; everything else works with the plain `Band` shape and doesn't know or care where the data comes from. (Events are stored in a table still named `gigs` — renaming a live table wasn't worth the risk; only the app-level name changed.)
+- `src/utils/calendar.ts` — pure functions deriving what a day looks like: `getDayStatus` (event / all-clear / missing-members) and `getMemberStatus`. Business logic lives here, not in components.
 - `src/components/Calendar.tsx` — owns which month is currently visible (defaults to today) and renders one `MonthGrid` with prev/next/today navigation; free to browse any month, forward or back. Each `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus`; clicking a day opens `DayEditorModal`.
 
 The app currently renders a single band (`App.tsx` calls `getBand('main-band')`) even though the data model already supports multiple bands — see README's Future Vision for the staged roadmap (self-service editing, the Supabase migration, and free calendar navigation are done; auth is next).

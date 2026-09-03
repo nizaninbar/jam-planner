@@ -1,7 +1,7 @@
-import type { Availability, AvailabilityStatus, Band, Gig, Member } from '../types/band';
+import type { Availability, AvailabilityStatus, Band, Event, Member } from '../types/band';
 
 export type DayStatus =
-  | { kind: 'gig'; gig: Gig }
+  | { kind: 'event'; event: Event }
   | { kind: 'all-clear' }
   | { kind: 'missing'; missingMembers: Member[] };
 
@@ -18,15 +18,15 @@ export function toIsoDate(date: Date): string {
 }
 
 export function getDayStatus(
-  band: Pick<Band, 'gigs' | 'availability'>,
+  band: Pick<Band, 'events' | 'availability'>,
   members: Member[],
   date: Date,
 ): DayStatus {
   const iso = toIsoDate(date);
 
-  const gig = band.gigs.find((g) => g.date === iso);
-  if (gig) {
-    return { kind: 'gig', gig };
+  const event = band.events.find((e) => e.date === iso);
+  if (event) {
+    return { kind: 'event', event };
   }
 
   const unavailableIds = new Set(

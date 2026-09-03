@@ -1,10 +1,12 @@
-import type { AvailabilityStatus, Band } from '../types/band';
+import type { AvailabilityStatus, Band, EventType } from '../types/band';
 import { supabase } from './supabaseClient';
 
-interface RawGig {
+interface RawEvent {
   id: string;
   date: string;
   label: string;
+  type: EventType;
+  location: string | null;
 }
 
 interface RawAvailability {
@@ -17,7 +19,7 @@ interface RawBand {
   id: string;
   name: string;
   members: { id: string; name: string }[];
-  gigs: RawGig[];
+  gigs: RawEvent[];
   availability: RawAvailability[];
 }
 
@@ -26,7 +28,13 @@ function mapBand(raw: RawBand): Band {
     id: raw.id,
     name: raw.name,
     members: raw.members,
-    gigs: raw.gigs,
+    events: raw.gigs.map((g) => ({
+      id: g.id,
+      date: g.date,
+      type: g.type,
+      label: g.label,
+      location: g.location ?? undefined,
+    })),
     availability: raw.availability.map((a) => ({
       memberId: a.member_id,
       date: a.date,
@@ -39,7 +47,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs(id,date,label), availability(member_id,date,status)',
+      'id, name, members!members_band_id_fkey(id,name), gigs(id,date,label,type,location), availability(member_id,date,status)',
     )
     .eq('id', bandId)
     .single();
@@ -74,6 +82,39 @@ export async function setMemberAvailability(
     if (error) {
       throw new Error(`Failed to update availability: ${error.message}`);
     }
+  }
+
+  return getBand(bandId);
+}
+
+export async function createEvent(
+  bandId: string,
+  date: string,
+  type: EventType,
+  label: string,
+  location?: string,
+): Promise<Band> {
+  const { error } = await supabase.from('gigs').insert({
+    id: crypto.randomUUID(),
+    band_id: bandId,
+    date,
+    type,
+    label,
+    location: location || null,
+  });
+
+  if (error) {
+    throw new Error(`Failed to create event: ${error.message}`);
+  }
+
+  return getBand(bandId);
+}
+
+export async function deleteEvent(bandId: string, eventId: string): Promise<Band> {
+  const { error } = await supabase.from('gigs').delete().match({ id: eventId, band_id: bandId });
+
+  if (error) {
+    throw new Error(`Failed to delete event: ${error.message}`);
   }
 
   return getBand(bandId);
