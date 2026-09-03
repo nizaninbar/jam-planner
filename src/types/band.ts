@@ -17,18 +17,10 @@ export interface Availability {
   status: AvailabilityStatus;
 }
 
-export interface Period {
-  id: string;
-  name: string;
-  startDate: string;
-  endDate: string;
-  gigs: Gig[];
-  availability: Availability[];
-}
-
 export interface Band {
   id: string;
   name: string;
   members: Member[];
-  periods: Period[];
+  gigs: Gig[];
+  availability: Availability[];
 }

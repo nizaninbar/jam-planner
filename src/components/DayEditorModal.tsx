@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { AvailabilityStatus, Member, Period } from '../types/band';
+import type { Availability, AvailabilityStatus, Member } from '../types/band';
 import { getMemberStatus } from '../utils/calendar';
 
 const MONTH_NAMES = [
@@ -9,13 +9,13 @@ const MONTH_NAMES = [
 
 interface DayEditorModalProps {
   date: Date;
-  period: Period;
+  availability: Availability[];
   members: Member[];
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
   onClose: () => void;
 }
 
-export function DayEditorModal({ date, period, members, onToggle, onClose }: DayEditorModalProps) {
+export function DayEditorModal({ date, availability, members, onToggle, onClose }: DayEditorModalProps) {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
@@ -39,7 +39,7 @@ export function DayEditorModal({ date, period, members, onToggle, onClose }: Day
         </div>
 
         {members.map((member) => {
-          const status = getMemberStatus(period, member.id, date);
+          const status = getMemberStatus(availability, member.id, date);
           const isAvailable = status === 'available';
           return (
             <div className="modal-row" key={member.id}>

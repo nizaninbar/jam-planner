@@ -24,24 +24,22 @@ function App() {
     return <div className="loading">טוען...</div>;
   }
 
-  const period = band.periods[0];
-
   const handleToggle = (memberId: string, nextStatus: AvailabilityStatus) => {
     if (!selectedDate) {
       return;
     }
-    setMemberAvailability(band.id, period.id, memberId, toIsoDate(selectedDate), nextStatus)
+    setMemberAvailability(band.id, memberId, toIsoDate(selectedDate), nextStatus)
       .then(setBand)
       .catch((err: Error) => setError(err.message));
   };
 
   return (
     <>
-      <Calendar band={band} period={period} onDayClick={setSelectedDate} />
+      <Calendar band={band} onDayClick={setSelectedDate} />
       {selectedDate && (
         <DayEditorModal
           date={selectedDate}
-          period={period}
+          availability={band.availability}
           members={band.members}
           onToggle={handleToggle}
           onClose={() => setSelectedDate(null)}

@@ -1,12 +1,6 @@
-import type { AvailabilityStatus, Gig, Member, Period } from '../types/band';
-
-export interface MonthKey {
-  year: number;
-  month: number;
-}
+import type { Availability, AvailabilityStatus, Band, Gig, Member } from '../types/band';
 
 export type DayStatus =
-  | { kind: 'outside-range' }
   | { kind: 'gig'; gig: Gig }
   | { kind: 'all-clear' }
   | { kind: 'missing'; missingMembers: Member[] };
@@ -23,45 +17,20 @@ export function toIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
-export function getMonthsInRange(startDate: string, endDate: string): MonthKey[] {
-  const start = parseIsoDate(startDate);
-  const end = parseIsoDate(endDate);
-
-  const months: MonthKey[] = [];
-  let year = start.getFullYear();
-  let month = start.getMonth();
-
-  while (year < end.getFullYear() || (year === end.getFullYear() && month <= end.getMonth())) {
-    months.push({ year, month });
-    month += 1;
-    if (month > 11) {
-      month = 0;
-      year += 1;
-    }
-  }
-
-  return months;
-}
-
-export function getDayStatus(period: Period, members: Member[], date: Date): DayStatus {
-  const start = parseIsoDate(period.startDate);
-  const end = parseIsoDate(period.endDate);
-
-  if (date < start || date > end) {
-    return { kind: 'outside-range' };
-  }
-
+export function getDayStatus(
+  band: Pick<Band, 'gigs' | 'availability'>,
+  members: Member[],
+  date: Date,
+): DayStatus {
   const iso = toIsoDate(date);
 
-  const gig = period.gigs.find((g) => g.date === iso);
+  const gig = band.gigs.find((g) => g.date === iso);
   if (gig) {
     return { kind: 'gig', gig };
   }
 
   const unavailableIds = new Set(
-    period.availability
-      .filter((a) => a.date === iso && a.status === 'unavailable')
-      .map((a) => a.memberId),
+    band.availability.filter((a) => a.date === iso && a.status === 'unavailable').map((a) => a.memberId),
   );
 
   if (unavailableIds.size === 0) {
@@ -71,9 +40,13 @@ export function getDayStatus(period: Period, members: Member[], date: Date): Day
   return { kind: 'missing', missingMembers: members.filter((m) => unavailableIds.has(m.id)) };
 }
 
-export function getMemberStatus(period: Period, memberId: string, date: Date): AvailabilityStatus {
+export function getMemberStatus(
+  availability: Availability[],
+  memberId: string,
+  date: Date,
+): AvailabilityStatus {
   const iso = toIsoDate(date);
-  const isUnavailable = period.availability.some(
+  const isUnavailable = availability.some(
     (a) => a.memberId === memberId && a.date === iso && a.status === 'unavailable',
   );
   return isUnavailable ? 'unavailable' : 'available';

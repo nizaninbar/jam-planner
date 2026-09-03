@@ -95,6 +95,29 @@ body {
   background-color: var(--accent-gold);
 }
 
+.month-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 30px;
+}
+
+.month-nav button {
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border: none;
+  border-radius: 20px;
+  padding: 10px 18px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.month-nav button:hover {
+  background-color: #333;
+}
+
 .month-section {
   margin-bottom: 50px;
 }

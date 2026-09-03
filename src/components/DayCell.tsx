@@ -7,10 +7,6 @@ interface DayCellProps {
 }
 
 export function DayCell({ date, status, onClick }: DayCellProps) {
-  if (status.kind === 'outside-range') {
-    return <div className="day-cell empty" />;
-  }
-
   const dayNumber = date.getDate();
 
   if (status.kind === 'gig') {

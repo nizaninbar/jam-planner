@@ -17,7 +17,7 @@ For architecture, data model, and setup details, see [docs/TECHNICAL.md](docs/TE
 Jam Planner will always be, at its core, a visual availability calendar — the fastest way for a band to see at a glance who's free and when. From there it's evolving in small, incremental steps toward a full rehearsal management system.
 
 ### Done
-* Dynamic date range and band members (no more hardcoded data)
+* Dynamic band members, with free navigation to any month (no more hardcoded date range)
 * Modern React SPA, mobile-friendly
 * Each member can edit their own availability directly on the calendar
 * Shared, single source of truth via a Supabase backend (no more per-browser localStorage)

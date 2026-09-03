@@ -1,4 +1,4 @@
-import type { Member, Period } from '../types/band';
+import type { Band, Member } from '../types/band';
 import { getDayStatus } from '../utils/calendar';
 import { DayCell } from './DayCell';
 
@@ -11,12 +11,12 @@ const MONTH_NAMES = [
 interface MonthGridProps {
   year: number;
   month: number;
-  period: Period;
+  band: Band;
   members: Member[];
   onDayClick: (date: Date) => void;
 }
 
-export function MonthGrid({ year, month, period, members, onDayClick }: MonthGridProps) {
+export function MonthGrid({ year, month, band, members, onDayClick }: MonthGridProps) {
   const daysInMonth = new Date(year, month + 1, 0).getDate();
   const leadingBlanks = new Date(year, month, 1).getDay();
   const days = Array.from({ length: daysInMonth }, (_, i) => new Date(year, month, i + 1));
@@ -39,7 +39,7 @@ export function MonthGrid({ year, month, period, members, onDayClick }: MonthGri
           <DayCell
             key={date.getDate()}
             date={date}
-            status={getDayStatus(period, members, date)}
+            status={getDayStatus(band, members, date)}
             onClick={() => onDayClick(date)}
           />
         ))}

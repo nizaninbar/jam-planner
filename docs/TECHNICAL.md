@@ -12,40 +12,56 @@ No test framework or linter beyond `oxlint` is set up yet.
 The domain model (`src/types/band.ts`) is the source of truth for shape:
 
 ```ts
-Band { id, name, members: Member[], periods: Period[] }
-Period { id, name, startDate, endDate, gigs: Gig[], availability: Availability[] }
+Band { id, name, members: Member[], gigs: Gig[], availability: Availability[] }
 Member { id, name }
 Gig { id, date, label }
 Availability { memberId, date, status: 'available' | 'unavailable' }
 ```
 
-`availability` only stores records that deviate from the default — a member with no record for a
-given date is assumed available. This keeps the common case (everyone's free) cheap to store and
-render.
+`gigs` and `availability` are band-wide — not scoped to any date range — which is what lets the
+calendar navigate freely to any month. `availability` only stores records that deviate from the
+default: a member with no record for a given date is assumed available. This keeps the common
+case (everyone's free) cheap to store and render.
 
-Supabase tables (`supabase/schema.sql`) mirror this almost 1:1: `bands`, `members`, `periods`,
-`gigs`, `availability`, using the same string ids as primary keys (e.g. `main-band`, `nitzan`).
-Postgres `date` columns round-trip as plain `'YYYY-MM-DD'` strings through PostgREST, so no date
-parsing happens at the network boundary.
+Supabase tables (`supabase/schema.sql`) mirror this almost 1:1: `bands`, `members`, `gigs`,
+`availability`, using the same string ids as primary keys (e.g. `main-band`, `nitzan`). Postgres
+`date` columns round-trip as plain `'YYYY-MM-DD'` strings through PostgREST, so no date parsing
+happens at the network boundary.
 
-The data model already supports multiple bands (each with its own members/periods/gigs), but the
-app currently only ever renders one (`App.tsx` hardcodes `getBand('main-band')`). Multi-band UI
+There used to be a `Period` concept (a named date range gigs/availability belonged to) — it was
+removed once the calendar became free-navigating, since nothing displayed a period's name/range
+anymore and a member should be able to set availability for any date, not just inside some
+predefined window. `supabase/migrate_01_add_band_id.sql` / `migrate_02_drop_periods_cleanup.sql`
+document that migration as a safe, two-phase change (additive first, destructive cleanup only once
+confirmed working) for removing a concept like this from a live database with real data without
+losing a rollback window.
+
+One schema gotcha worth knowing: PostgREST infers relationships from foreign keys, and because
+`availability` has FKs to both `bands` and `members`, PostgREST also infers an implicit
+many-to-many "bands via availability to members" path — which makes a plain `members(id,name)`
+embed under `bands` ambiguous (PGRST201). `bandService.ts`'s query disambiguates with
+`members!members_band_id_fkey(id,name)`, pointing PostgREST at the direct FK instead of letting it
+guess.
+
+The data model already supports multiple bands (each with its own members/gigs/availability), but
+the app currently only ever renders one (`App.tsx` hardcodes `getBand('main-band')`). Multi-band UI
 (e.g. a band switcher) isn't built yet.
 
 ## Data flow
 - `src/data/supabaseClient.ts` — creates the Supabase client from env vars.
 - `src/data/bandService.ts` — the *only* file that talks to Supabase. `getBand(bandId)` runs one
-  nested PostgREST query (band → members, periods → gigs, availability) and maps the snake_case
-  rows into the `Band` shape above. `setMemberAvailability(...)` deletes the availability row when
-  a member is set back to available (matching the "no record = available" convention) or upserts
-  one otherwise, then re-fetches and returns the updated `Band`.
-- `src/utils/calendar.ts` — pure functions that derive what to render from a `Period`:
-  `getMonthsInRange` (which month grids to show) and `getDayStatus` (gig / all-clear /
-  missing-members / outside-range for a given date). All the "what does this day look like" logic
-  lives here, not scattered across components.
-- `src/components/` — `Calendar` renders one `MonthGrid` per month; each `MonthGrid` renders
-  `DayCell`s driven entirely by `getDayStatus`; clicking a day opens `DayEditorModal`, which lists
-  every member with an available/unavailable toggle for that date.
+  nested PostgREST query (band → members, gigs, availability) and maps the snake_case rows into
+  the `Band` shape above. `setMemberAvailability(...)` deletes the availability row when a member
+  is set back to available (matching the "no record = available" convention) or upserts one
+  otherwise (targeting the `(band_id, member_id, date)` unique constraint explicitly via
+  `onConflict`), then re-fetches and returns the updated `Band`.
+- `src/utils/calendar.ts` — pure functions that derive what a day looks like: `getDayStatus` (gig /
+  all-clear / missing-members for a given date) and `getMemberStatus`. All the "what does this day
+  look like" logic lives here, not scattered across components.
+- `src/components/Calendar.tsx` — owns `visibleMonth` state (defaults to today's real month) and
+  renders one `MonthGrid` at a time with `‹ הקודם` / `היום` / `הבא ›` navigation buttons. Each
+  `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus`; clicking a day opens
+  `DayEditorModal`, which lists every member with an available/unavailable toggle for that date.
 
 No component imports Supabase directly — swapping the backend again in the future should only
 mean changing `bandService.ts`.
