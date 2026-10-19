@@ -30,4 +30,6 @@ Data flows one direction:
 - `src/utils/calendar.ts` — pure functions deriving what a day looks like: `getDayStatus` (event / all-clear / missing-members) and `getMemberStatus`. Business logic lives here, not in components.
 - `src/components/Calendar.tsx` — owns which month is currently visible (defaults to today) and renders one `MonthGrid` with prev/next/today navigation; free to browse any month, forward or back. Each `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus`; clicking a day opens `DayEditorModal`.
 
-The app currently renders a single band (`App.tsx` calls `getBand('main-band')`) even though the data model already supports multiple bands — see README's Future Vision for the staged roadmap (self-service editing, the Supabase migration, and free calendar navigation are done; auth is next).
+Product goals and the Playlists spec are in `docs/GOALS.md` — read it before proposing features.
+
+The app currently renders a single band (`App.tsx` calls `getBand('main-band')`) even though the data model already supports multiple bands — see README's Future Vision and `docs/GOALS.md` for the roadmap (self-service editing, the Supabase migration, and free calendar navigation are done; Playlists are next).

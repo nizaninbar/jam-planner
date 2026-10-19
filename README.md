@@ -1,7 +1,7 @@
 # jam-planner
-Sync the groove: A smart rehearsal scheduling tool to help bands find the perfect time to jam.
+Sync the groove: A band management assistant, starting with a smart rehearsal scheduling calendar that helps bands find the perfect time to jam.
 
-A collaborative scheduling tool designed to help bands and musical ensembles sync their availability and plan rehearsals efficiently.
+A collaborative tool designed to help bands and musical ensembles sync their availability, plan rehearsals efficiently, and (next) manage what they play.
 
 ## Current State
 Jam Planner is a React + TypeScript single-page app backed by a shared Supabase database. Any
@@ -15,12 +15,12 @@ static, manually-updated file. Dates can also be marked as a gig (with a locatio
 For architecture, data model, and setup details, see [docs/TECHNICAL.md](docs/TECHNICAL.md).
 
 ## Future Vision
-Jam Planner will always be, at its core, a visual availability calendar — the fastest way for a
-band to see at a glance who's free and when. Longer-term, the direction is to grow it into a full
-band app (playlists, past rehearsal/gig recordings, setlists, etc.) with this calendar as one
-feature among several — not to generalize the scheduling piece into a standalone service for other
-apps; there's no second consumer that would justify that yet, and it would trade away the tight
-build-and-get-real-feedback loop that's worked well so far.
+Jam Planner's global goal is to be a **band management assistant**. The availability calendar —
+the fastest way for a band to see at a glance who's free and when — is the first feature and stays
+a first-class view; more features are added one at a time. It is not meant to become a standalone
+scheduling service for other apps.
+
+The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS.md](docs/GOALS.md).
 
 ### Done
 * Dynamic band members, with free navigation to any month (no more hardcoded date range)
@@ -30,15 +30,6 @@ build-and-get-real-feedback loop that's worked well so far.
 * Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
 
 ### Next up
-* User authentication for band members, so edits are attributed and each member can only change their own availability
-* Replace the binary available / not-available status with a middle state (e.g. available, prefer not, not available)
-* An upcoming-events list view (next gig/rehearsal at a glance, not just the calendar grid)
-* Once there's real auth: consider whether a rehearsal needs its own attendance confirmation ("I'm coming to *this* one") separate from general availability — open question, not yet decided
-* Automated optimal rehearsal time suggestions
-* Setlist management
+* Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links — see [docs/GOALS.md](docs/GOALS.md)
 
-### Later (full band app)
-* Playlists and past rehearsal/gig recordings
-* This calendar becomes one feature among several, not the whole app
-
-Stay tuned!
+Anything beyond that is still TBD.
