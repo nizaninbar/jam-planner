@@ -1,7 +1,7 @@
 # jam-planner
 Sync the groove: A band management assistant, starting with a smart rehearsal scheduling calendar that helps bands find the perfect time to jam.
 
-A collaborative tool designed to help bands and musical ensembles sync their availability, plan rehearsals efficiently, and (next) manage what they play.
+A collaborative tool designed to help bands and musical ensembles sync their availability, plan rehearsals efficiently, and manage what they play.
 
 ## Current State
 Jam Planner is a React + TypeScript single-page app backed by a shared Supabase database. Any
@@ -28,8 +28,7 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Each member can edit their own availability directly on the calendar
 * Shared, single source of truth via a Supabase backend (no more per-browser localStorage)
 * Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
+* Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links
 
 ### Next up
-* Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links — see [docs/GOALS.md](docs/GOALS.md)
-
-Anything beyond that is still TBD.
+Nothing is committed yet; ideas are listed in [docs/GOALS.md](docs/GOALS.md).

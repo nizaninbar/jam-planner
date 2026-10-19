@@ -9,7 +9,7 @@ is the first feature; more are added one at a time.
 | Feature | Status |
 | --- | --- |
 | Availability calendar (who's free, gigs, rehearsals) | Done - unchanged |
-| Playlists | Next |
+| Playlists (songs, links, ordered lists, event link) | Done |
 | Anything beyond that | TBD |
 
 ## Audience
@@ -29,7 +29,7 @@ self-signup are not goals right now.
 - Hosting or streaming audio - recordings are links only.
 
 ## Roadmap
-**Playlists only.** Nothing else is committed.
+Nothing is currently committed; Playlists (v1) shipped.
 
 Ideas, not scheduled and unprioritized: user authentication, a middle availability state
 ("prefer not"), an upcoming-events list, rehearsal-time suggestions, rehearsal attendance
@@ -41,6 +41,7 @@ confirmation, setlist extras, a recordings library.
 - Each member edits their own availability directly on the calendar
 - Shared Supabase backend (no per-browser localStorage)
 - Dates can be marked as a gig (with a location) or a rehearsal (guided or band-only)
+- Playlists: reusable songs with lyrics/chords/structure/links, ordered playlists, optional event link
 
 ## Playlists spec
 

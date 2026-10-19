@@ -33,6 +33,55 @@ create table if not exists availability (
   primary key (band_id, member_id, date)
 );
 
+-- Playlists (see supabase/migrate_04_add_playlists.sql for the in-place migration)
+create table if not exists songs (
+  id text primary key,
+  band_id text not null references bands(id) on delete cascade,
+  name text not null,
+  lyrics text,
+  chords text,
+  structure text
+);
+
+create table if not exists song_links (
+  id text primary key,
+  song_id text not null references songs(id) on delete cascade,
+  position integer not null,
+  description text not null default '',
+  url text not null check (url ~* '^https?://')
+);
+
+create table if not exists playlists (
+  id text primary key,
+  band_id text not null references bands(id) on delete cascade,
+  name text not null,
+  description text not null default '',
+  event_id text unique references gigs(id) on delete set null
+);
+
+create table if not exists playlist_songs (
+  playlist_id text not null references playlists(id) on delete cascade,
+  song_id text not null references songs(id) on delete cascade,
+  position integer not null,
+  primary key (playlist_id, song_id),
+  unique (playlist_id, position) deferrable initially deferred
+);
+
+create index if not exists songs_band_id_idx on songs(band_id);
+create index if not exists song_links_song_id_idx on song_links(song_id);
+create index if not exists playlists_band_id_idx on playlists(band_id);
+create index if not exists playlist_songs_song_id_idx on playlist_songs(song_id);
+
+alter table songs enable row level security;
+alter table song_links enable row level security;
+alter table playlists enable row level security;
+alter table playlist_songs enable row level security;
+
+create policy "public all songs" on songs for all using (true) with check (true);
+create policy "public all song_links" on song_links for all using (true) with check (true);
+create policy "public all playlists" on playlists for all using (true) with check (true);
+create policy "public all playlist_songs" on playlist_songs for all using (true) with check (true);
+
 -- RLS is enabled with fully open policies for now (no auth yet, same exposure as the
 -- localStorage version it replaces). Auth will later tighten these policies without
 -- needing a schema change.

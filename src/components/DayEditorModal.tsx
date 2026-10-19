@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import type { Availability, AvailabilityStatus, Event, EventType, Member } from '../types/band';
+import type { Availability, AvailabilityStatus, Event, EventType, Member, Playlist } from '../types/band';
 import { getMemberStatus, toIsoDate } from '../utils/calendar';
+import { getPlaylistForEvent } from '../utils/playlists';
 
 const MONTH_NAMES = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
@@ -16,22 +17,30 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
 interface DayEditorModalProps {
   date: Date;
   events: Event[];
+  playlists: Playlist[];
   availability: Availability[];
   members: Member[];
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
   onCreateEvent: (type: EventType, label: string, location?: string) => void;
   onDeleteEvent: (eventId: string) => void;
+  onOpenPlaylist: (playlistId: string) => void;
+  onCreateEventPlaylist: (eventId: string, name: string) => void;
+  onLinkPlaylist: (playlistId: string, eventId: string) => void;
   onClose: () => void;
 }
 
 export function DayEditorModal({
   date,
   events,
+  playlists,
   availability,
   members,
   onToggle,
   onCreateEvent,
   onDeleteEvent,
+  onOpenPlaylist,
+  onCreateEventPlaylist,
+  onLinkPlaylist,
   onClose,
 }: DayEditorModalProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -50,6 +59,8 @@ export function DayEditorModal({
   }, [onClose]);
 
   const existingEvent = events.find((e) => e.date === toIsoDate(date));
+  const eventPlaylist = existingEvent ? getPlaylistForEvent(existingEvent.id, playlists) : undefined;
+  const unlinkedPlaylists = playlists.filter((p) => !p.eventId);
 
   const handleAdd = () => {
     if (!label.trim()) {
@@ -74,15 +85,48 @@ export function DayEditorModal({
         </div>
 
         {existingEvent ? (
-          <div className="event-section">
-            <div className="event-info">
-              <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
-              {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
+          <>
+            <div className="event-section">
+              <div className="event-info">
+                <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
+                {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
+              </div>
+              <button type="button" className="modal-close" onClick={() => onDeleteEvent(existingEvent.id)} aria-label="הסר אירוע">
+                ✕
+              </button>
             </div>
-            <button type="button" className="modal-close" onClick={() => onDeleteEvent(existingEvent.id)} aria-label="הסר אירוע">
-              ✕
-            </button>
-          </div>
+            <div className="event-playlist">
+              {eventPlaylist ? (
+                <button type="button" className="add-event-btn" onClick={() => onOpenPlaylist(eventPlaylist.id)}>
+                  🎵 {eventPlaylist.name}
+                </button>
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    className="add-event-btn"
+                    onClick={() => onCreateEventPlaylist(existingEvent.id, existingEvent.label)}
+                  >
+                    + צור פלייליסט לאירוע
+                  </button>
+                  {unlinkedPlaylists.length > 0 && (
+                    <select
+                      value=""
+                      className="event-playlist-select"
+                      onChange={(e) => e.target.value && onLinkPlaylist(e.target.value, existingEvent.id)}
+                    >
+                      <option value="">או קשר פלייליסט קיים…</option>
+                      {unlinkedPlaylists.map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </>
+              )}
+            </div>
+          </>
         ) : isAdding ? (
           <div className="event-form">
             <select value={type} onChange={(e) => setType(e.target.value as EventType)}>

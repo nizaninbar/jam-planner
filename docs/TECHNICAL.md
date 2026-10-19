@@ -27,15 +27,19 @@ given date is assumed available. This keeps the common case (everyone's free) ch
 render.
 
 Supabase tables (`supabase/schema.sql`) mirror this almost 1:1: `bands`, `members`, `gigs`,
-`availability`, using the same string ids as primary keys (e.g. `main-band`, `nitzan`). The table
+`availability`, plus the Playlists tables `songs`, `song_links`, `playlists` and `playlist_songs`
+(added by `supabase/migrate_04_add_playlists.sql`), using the same string ids as primary keys (e.g.
+`main-band`, `nitzan`). The table
 backing `Event` is still named `gigs` at the DB level - it predates the generalization, and
 renaming a live table wasn't worth the risk for a purely cosmetic gain; only the app-level type
 name changed. Postgres `date` columns round-trip as plain `'YYYY-MM-DD'` strings through
 PostgREST, so no date parsing happens at the network boundary.
 
-User-created events need a real primary key, so `bandService.createEvent` generates one with
-`crypto.randomUUID()` client-side rather than relying on a DB default - the original seeded gig
-still uses its old slug id (`gig-2026-10-08`), and both coexist fine since `gigs.id` is just `text`.
+User-created rows need a real primary key, so `bandService` generates one with `newId()`
+(`src/utils/id.ts`) client-side rather than relying on a DB default. It is used instead of
+`crypto.randomUUID()` because the latter is undefined on non-secure pages (e.g. the dev server
+opened from a phone over `http://<lan-ip>`). The original seeded gig still uses its old slug id
+(`gig-2026-10-08`), and both coexist fine since `gigs.id` is just `text`.
 
 There used to be a `Period` concept (a named date range gigs/availability belonged to) — it was
 removed once the calendar became free-navigating, since nothing displayed a period's name/range
