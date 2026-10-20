@@ -12,6 +12,13 @@ interface SongsViewProps {
 export function SongsView({ band, apply, onOpenSong }: SongsViewProps) {
   const [name, setName] = useState('');
 
+  const [query, setQuery] = useState('');
+
+  const normalizedQuery = query.trim().toLowerCase();
+  const visibleSongs = normalizedQuery
+    ? band.songs.filter((song) => song.name.toLowerCase().includes(normalizedQuery))
+    : band.songs;
+
   const handleCreate = () => {
     if (!name.trim()) {
       return;
@@ -37,10 +44,22 @@ export function SongsView({ band, apply, onOpenSong }: SongsViewProps) {
         </button>
       </div>
 
+      {band.songs.length > 0 && (
+        <div className="inline-form">
+          <input
+            type="search"
+            placeholder="חיפוש שיר לפי שם"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+      )}
+
       {band.songs.length === 0 && <p className="muted">אין שירים עדיין.</p>}
+      {band.songs.length > 0 && visibleSongs.length === 0 && <p className="muted">לא נמצאו שירים.</p>}
 
       <ul className="item-list">
-        {[...band.songs]
+        {[...visibleSongs]
           .sort((a, b) => a.name.localeCompare(b.name, 'he'))
           .map((song) => {
             const count = getPlaylistsContainingSong(song.id, band.playlists).length;
