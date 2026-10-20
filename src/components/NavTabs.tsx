@@ -1,9 +1,9 @@
 export type Section = 'calendar' | 'playlists' | 'songs';
 
-const TABS: { section: Section; label: string }[] = [
-  { section: 'calendar', label: '🗓️ לוח שנה' },
-  { section: 'playlists', label: '🎵 פלייליסטים' },
-  { section: 'songs', label: '🎸 שירים' },
+const TABS: { section: Section; icon: string; label: string }[] = [
+  { section: 'calendar', icon: '🗓️', label: 'לוח שנה' },
+  { section: 'playlists', icon: '🎵', label: 'פלייליסטים' },
+  { section: 'songs', icon: '🎸', label: 'שירים' },
 ];
 
 interface NavTabsProps {
@@ -19,9 +19,11 @@ export function NavTabs({ active, onSelect }: NavTabsProps) {
           key={tab.section}
           type="button"
           className={tab.section === active ? 'nav-tab nav-tab-active' : 'nav-tab'}
+          aria-current={tab.section === active ? 'page' : undefined}
           onClick={() => onSelect(tab.section)}
         >
-          {tab.label}
+          <span className="nav-tab-icon">{tab.icon}</span>
+          <span className="nav-tab-label">{tab.label}</span>
         </button>
       ))}
     </nav>

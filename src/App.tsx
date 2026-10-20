@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { AppHeader } from './components/AppHeader';
 import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
 import { NavTabs, type Section } from './components/NavTabs';
@@ -85,6 +86,7 @@ function App() {
 
   return (
     <div className="app-shell">
+      <AppHeader bandName={band.name} />
       <NavTabs active={view.section} onSelect={(section) => setView({ section })} />
       {view.section === 'calendar' && <Calendar band={band} onDayClick={setSelectedDate} />}
       {view.section === 'playlists' &&
