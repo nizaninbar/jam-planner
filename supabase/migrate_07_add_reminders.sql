@@ -39,7 +39,9 @@ create policy "own push delete" on push_subscriptions for delete to authenticate
 -- 1. Store the shared secret the function checks (pick any long random string; use the SAME value
 --    for `supabase secrets set CRON_SECRET=...`):
 --      select vault.create_secret('<long-random-string>', 'reminders_cron_secret');
--- 2. Schedule the job, replacing <project-ref>:
+-- 2. Schedule the job. Replace <project-ref> with the 20-letter ref from your Supabase URL
+--    (https://<ref>.supabase.co) - a leftover placeholder fails with "Couldn't resolve host name",
+--    visible via: select * from net._http_response order by created desc limit 5;
 --      select cron.schedule(
 --        'send-reminders',
 --        '*/5 * * * *',

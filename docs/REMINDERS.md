@@ -16,6 +16,8 @@ within ~5 minutes of the chosen time.
 3. **Supabase**: Database → Extensions → enable `pg_cron` and `pg_net`.
 4. Run `supabase/migrate_07_add_reminders.sql` in the SQL Editor, then the two commented statements at
    its bottom (vault secret + `cron.schedule`, filling in `<project-ref>` and a random secret).
+   `<project-ref>` must be the real 20-letter ref from your Supabase URL; to fix a wrong one, run
+   `select cron.unschedule('send-reminders');` and schedule it again.
 5. **Edge function** (Supabase CLI):
    ```
    npx supabase link --project-ref <20-letter ref from your Supabase URL, not the project name>
@@ -46,8 +48,11 @@ within ~5 minutes of the chosen time.
   on each phone tap 🔕 and **הפעל התראות** again (old subscriptions belong to the old key).
 - **No "הפעל התראות" banner**: the site was built without `VAPID_PUBLIC_KEY`, or the app isn't running
   from the https site.
-- **Test works but a scheduled reminder doesn't arrive**: check that `CRON_SECRET` matches the vault
-  secret `reminders_cron_secret`, and `select * from cron.job_run_details order by start_time desc`.
+- **Test works but a scheduled reminder doesn't arrive** (stays "ממתינה"): run
+  `select status_code, content, error_msg from net._http_response order by created desc limit 5;`.
+  "Couldn't resolve host name" = wrong/placeholder `<project-ref>` in the cron job; `401` =
+  `CRON_SECRET` doesn't match the vault secret `reminders_cron_secret`; no rows = `pg_net` or the job
+  isn't set up (`select * from cron.job;`, `cron.job_run_details`).
 
 Limits: reminders go to every subscribed device of the band; a device that hasn't enabled
 notifications gets nothing. Editing the reminder time re-arms an already-sent reminder.
