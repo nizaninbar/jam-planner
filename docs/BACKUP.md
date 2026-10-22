@@ -21,20 +21,39 @@ project from auto-pausing after a week of inactivity. If a run fails, GitHub ema
    expire after 90 days and live in the same GitHub account as the code.
 
 ## Restore
-Needs `psql` (PostgreSQL client) and `gpg`.
+Needs `gpg`, `gunzip` and `psql`. On Windows, Git for Windows ships the first two in
+`C:\Program Files\Git\usr\bin` (not on PowerShell's PATH; call them by full path or use Git Bash).
+If you don't have `psql`, run it through Docker instead (see step 2).
 
 ```sh
 # 1. Download the artifact zip from the Actions run, unzip, then decrypt:
 gpg -o backup.sql.gz --decrypt jam-planner-YYYY-MM-DD.sql.gz.gpg
-gunzip backup.sql.gz   # Windows: use 7-Zip, or Git Bash
+gunzip backup.sql.gz
 
-# 2. Load it (the dump drops and recreates the public tables first):
-psql "<SUPABASE_DB_URL>" -f backup.sql
+# 2. Load it (the dump drops and recreates the public tables first).
+#    ON_ERROR_STOP makes it stop at the first error instead of half-restoring.
+psql -v ON_ERROR_STOP=1 "<SUPABASE_DB_URL>" -f backup.sql
+
+#    No psql installed? Same thing via Docker (bash syntax):
+docker run --rm -i postgres:17 psql -v ON_ERROR_STOP=1 "<SUPABASE_DB_URL>" < backup.sql
 ```
 
-To restore into a **new** Supabase project, just use that project's connection string. Then update
-`SUPABASE_URL` / `SUPABASE_ANON_KEY` repo secrets and `.env.local`.
+Use the session-pooler connection string (same as the `SUPABASE_DB_URL` secret). To restore into a
+**new** Supabase project, use that project's string. Then update the `SUPABASE_URL` /
+`SUPABASE_ANON_KEY` repo secrets and `.env.local`.
 
-Restoring replaces everything in `public` with the backup's contents, so changes made after the
-backup are lost. Test a restore into a throwaway Supabase project once, so you know it works before
-you need it.
+### Restoring into plain Postgres (not Supabase)
+The dump's RLS policies reference Supabase's roles, so create them first, otherwise the load fails:
+
+```sql
+create role anon; create role authenticated; create role service_role;
+```
+
+Plain Postgres has no PostgREST, so the policies are harmless but unused. The app itself talks to
+Supabase's API, so pointing it at plain Postgres also needs changes to `src/data/bandService.ts`.
+
+### Notes
+- Restoring replaces everything in `public` with the backup's contents; changes made after the
+  backup are lost.
+- Tested: decrypt + load into a local Postgres 17 (Docker) restores all rows and policies. Not yet
+  tested: loading into a Supabase project.
