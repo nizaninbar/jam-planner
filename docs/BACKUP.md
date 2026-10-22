@@ -25,7 +25,8 @@ Needs `psql` (PostgreSQL client) and `gpg`.
 
 ```sh
 # 1. Download the artifact zip from the Actions run, unzip, then decrypt:
-gpg --decrypt jam-planner-YYYY-MM-DD.sql.gz.gpg | gunzip > backup.sql
+gpg -o backup.sql.gz --decrypt jam-planner-YYYY-MM-DD.sql.gz.gpg
+gunzip backup.sql.gz   # Windows: use 7-Zip, or Git Bash
 
 # 2. Load it (the dump drops and recreates the public tables first):
 psql "<SUPABASE_DB_URL>" -f backup.sql
