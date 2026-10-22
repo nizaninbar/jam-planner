@@ -35,8 +35,10 @@ within ~5 minutes of the chosen time.
 - **Android Chrome**: menu ⋮ → *Install app* (or *Add to Home screen*).
 - **iPhone (iOS 16.4+)**: Safari → Share → *Add to Home Screen*, then open it from the home screen
   (push doesn't work in a plain Safari tab).
-- Open the app, tap **🔔 הפעל התראות** and allow, then **שלח בדיקה** — a notification should arrive
-  immediately. To test a real reminder, set one on an event ~5–10 minutes ahead.
+- Open the app, tap **🔔 הפעל התראות** and allow. To test, set a reminder on an event ~5–10 minutes
+  ahead; it should arrive within 5 minutes of that time.
+- The in-app "send test" button was removed after setup. To bring it back, call `sendTestPush()` from
+  `src/data/pushService.ts` (the function supports `{ "test": true }` for a signed-in user).
 
 ## Troubleshooting
 

@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { disablePush, enablePush, getPushStatus, sendTestPush, type PushStatus } from '../data/pushService';
+import { disablePush, enablePush, getPushStatus, type PushStatus } from '../data/pushService';
 
 interface NotificationsBannerProps {
   bandId: string;
 }
 
-// Lets this device opt in to reminders, and (once on) send itself a test notification.
+// Lets this device opt in to (or out of) reminders. The "send test" button was removed once setup was
+// verified; pushService.sendTestPush and the function's { test: true } path remain if it's needed again.
 export function NotificationsBanner({ bandId }: NotificationsBannerProps) {
   const [status, setStatus] = useState<PushStatus | null>(null);
   const [busy, setBusy] = useState(false);
@@ -39,16 +40,6 @@ export function NotificationsBanner({ bandId }: NotificationsBannerProps) {
       {status === 'on' ? (
         <>
           <span>{message ?? '🔔 התראות מופעלות במכשיר הזה.'}</span>
-          <button
-            type="button"
-            className="toggle-btn toggle-available"
-            disabled={busy}
-            onClick={() =>
-              run(async () => ((await sendTestPush()) > 0 ? 'נשלחה התראת בדיקה' : 'לא נמצא מכשיר לשליחה'))
-            }
-          >
-            שלח בדיקה
-          </button>
           <button type="button" className="icon-btn" disabled={busy} onClick={() => run(disablePush)} aria-label="כבה התראות" title="כבה התראות">
             🔕
           </button>
