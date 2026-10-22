@@ -14,6 +14,10 @@ export interface Event {
   label: string;
   location?: string;
   playlistId?: string;
+  /** ISO timestamp of when to push a reminder; absent = no reminder. */
+  remindAt?: string;
+  /** True once the reminder has been pushed. */
+  reminderSent?: boolean;
 }
 
 export interface Availability {

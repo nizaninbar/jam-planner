@@ -14,6 +14,17 @@ const EVENT_TYPE_LABELS: Record<EventType, string> = {
   'rehearsal-band-only': 'חזרה של הלהקה',
 };
 
+// <input type="datetime-local"> speaks local time without a zone; the DB stores a real instant.
+function toLocalInputValue(iso: string): string {
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatReminder(iso: string): string {
+  return new Date(iso).toLocaleString('he-IL', { dateStyle: 'short', timeStyle: 'short' });
+}
+
 interface DayEditorModalProps {
   date: Date;
   events: Event[];
@@ -28,6 +39,7 @@ interface DayEditorModalProps {
   onOpenPlaylist: (playlistId: string) => void;
   onCreateEventPlaylist: (eventId: string, name: string) => void;
   onLinkPlaylist: (playlistId: string, eventId: string) => void;
+  onSetReminder: (eventId: string, remindAt: string | null) => void;
   onClose: () => void;
 }
 
@@ -45,6 +57,7 @@ export function DayEditorModal({
   onOpenPlaylist,
   onCreateEventPlaylist,
   onLinkPlaylist,
+  onSetReminder,
   onClose,
 }: DayEditorModalProps) {
   const [isAdding, setIsAdding] = useState(false);
@@ -131,6 +144,43 @@ export function DayEditorModal({
                 </>
               ) : null}
             </div>
+            {canEditContent ? (
+              <div className="event-reminder">
+                <label>
+                  🔔 תזכורת
+                  <input
+                    type="datetime-local"
+                    key={existingEvent.remindAt ?? 'none'}
+                    defaultValue={existingEvent.remindAt ? toLocalInputValue(existingEvent.remindAt) : ''}
+                    onBlur={(e) => {
+                      const next = e.target.value ? new Date(e.target.value).toISOString() : null;
+                      if (next !== (existingEvent.remindAt ? new Date(existingEvent.remindAt).toISOString() : null)) {
+                        onSetReminder(existingEvent.id, next);
+                      }
+                    }}
+                  />
+                </label>
+                {existingEvent.remindAt && (
+                  <>
+                    <span className="event-reminder-state">{existingEvent.reminderSent ? 'נשלחה ✓' : 'ממתינה'}</span>
+                    <button
+                      type="button"
+                      className="modal-close"
+                      onClick={() => onSetReminder(existingEvent.id, null)}
+                      aria-label="הסר תזכורת"
+                    >
+                      ✕
+                    </button>
+                  </>
+                )}
+              </div>
+            ) : (
+              existingEvent.remindAt && (
+                <div className="event-reminder">
+                  🔔 תזכורת: {formatReminder(existingEvent.remindAt)}
+                </div>
+              )
+            )}
           </>
         ) : !canEditContent ? null : isAdding ? (
           <div className="event-form">

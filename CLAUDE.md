@@ -34,6 +34,8 @@ Data flows one direction:
 
 Identity & access: `src/data/authService.ts` is the only caller of `supabase.auth` and the IAM RPCs (the auth twin of `bandService.ts`); `src/utils/permissions.ts` holds the pure role checks (`canEditContent`, `canEditAvailability`, `canManageAccess`) used to show/hide controls — the real enforcement is RLS in `supabase/migrate_06_add_iam.sql` (the open policies in `schema.sql` are dropped by it). Users sign in via a per-member invite link (`#/invite/<token>`, claimed through an anonymous session in `App.tsx`'s `loadSession`), then optionally attach Google. `App.tsx` gates on `AuthState`: no account shows `NoAccessScreen`; admins get the `MembersAdminView` tab. First admin: `supabase/bootstrap_first_admin.sql`. Dashboard needs anonymous sign-ins, manual linking and the Google provider enabled.
 
+Reminders: an `Event` has an optional `remindAt` (set in `DayEditorModal`, saved via `setEventReminder`). Delivery is Web Push: `src/data/pushService.ts` (the only caller of the push APIs) subscribes the device into `push_subscriptions`; `supabase/functions/send-reminders` (run by pg_cron every 5 min) sends due reminders. PWA files live in `public/`. Setup and testing: `docs/REMINDERS.md`.
+
 Product goals and the Playlists spec are in `docs/GOALS.md` — read it before proposing features.
 
 The app currently renders a single band (`App.tsx` calls `getBand('main-band')`) even though the data model already supports multiple bands — see README's Future Vision and `docs/GOALS.md` for the roadmap (self-service editing, the Supabase migration, free calendar navigation and Playlists are done).

@@ -23,7 +23,9 @@ create table if not exists gigs (
   label text not null,
   type text not null default 'gig' check (type in ('gig', 'rehearsal-guided', 'rehearsal-band-only')),
   location text,
-  playlist_id text -- fk -> playlists, added below (playlists is created later)
+  playlist_id text, -- fk -> playlists, added below (playlists is created later)
+  remind_at timestamptz, -- when to push a reminder (see migrate_07_add_reminders.sql)
+  reminder_sent_at timestamptz -- set by the send-reminders function; null = still pending
 );
 
 create table if not exists availability (

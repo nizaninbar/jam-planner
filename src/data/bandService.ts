@@ -9,6 +9,8 @@ interface RawEvent {
   type: EventType;
   location: string | null;
   playlist_id: string | null;
+  remind_at: string | null;
+  reminder_sent_at: string | null;
 }
 
 interface RawAvailability {
@@ -55,6 +57,8 @@ function mapBand(raw: RawBand): Band {
       label: g.label,
       location: g.location ?? undefined,
       playlistId: g.playlist_id ?? undefined,
+      remindAt: g.remind_at ?? undefined,
+      reminderSent: g.reminder_sent_at !== null,
     })),
     availability: raw.availability.map((a) => ({
       memberId: a.member_id,
@@ -86,7 +90,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,playlist_id), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
+      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
     )
     .eq('id', bandId)
     .single();
@@ -266,6 +270,20 @@ export async function setEventPlaylist(
     .update({ playlist_id: playlistId })
     .match({ id: eventId, band_id: bandId });
   if (error) fail('link playlist to event', error);
+  return getBand(bandId);
+}
+
+/** Sets (or clears, with null) when the event's push reminder goes out; re-arms an already-sent one. */
+export async function setEventReminder(
+  bandId: string,
+  eventId: string,
+  remindAt: string | null,
+): Promise<Band> {
+  const { error } = await supabase
+    .from('gigs')
+    .update({ remind_at: remindAt, reminder_sent_at: null })
+    .match({ id: eventId, band_id: bandId });
+  if (error) fail('set event reminder', error);
   return getBand(bandId);
 }
 

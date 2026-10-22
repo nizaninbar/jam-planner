@@ -809,6 +809,39 @@ body {
   border-radius: 12px;
 }
 
+.event-reminder {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.event-reminder label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 220px;
+}
+
+.event-reminder input {
+  flex: 1;
+  min-width: 0;
+  min-height: 44px;
+  background: var(--bg-hover);
+  color: var(--text-main);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.event-reminder-state {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
 .banner > span {
   flex: 1 1 200px;
 }

@@ -3,6 +3,7 @@ import { AppHeader } from './components/AppHeader';
 import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
 import { GoogleBanner } from './components/GoogleBanner';
+import { NotificationsBanner } from './components/NotificationsBanner';
 import { MembersAdminView } from './components/MembersAdminView';
 import { NavTabs, type Section } from './components/NavTabs';
 import { NoAccessScreen } from './components/NoAccessScreen';
@@ -27,6 +28,7 @@ import {
   deleteEvent,
   getBand,
   setEventPlaylist,
+  setEventReminder,
   setMemberAvailability,
 } from './data/bandService';
 import type { Account, AvailabilityStatus, Band, EventType } from './types/band';
@@ -175,6 +177,7 @@ function App() {
     <div className="app-shell">
       <AppHeader bandName={band.name} onSignOut={handleSignOut} />
       {!auth.googleLinked && <GoogleBanner onAttach={() => handleGoogle(attachGoogle)} />}
+      <NotificationsBanner bandId={band.id} />
       <NavTabs
         active={view.section}
         showAdmin={canManageAccess(account)}
@@ -228,6 +231,7 @@ function App() {
           onOpenPlaylist={openPlaylist}
           onCreateEventPlaylist={handleCreateEventPlaylist}
           onLinkPlaylist={handleLinkPlaylist}
+          onSetReminder={(eventId, remindAt) => apply(setEventReminder(band.id, eventId, remindAt))}
           onClose={() => setSelectedDate(null)}
         />
       )}
