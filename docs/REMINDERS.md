@@ -18,10 +18,15 @@ within ~5 minutes of the chosen time.
    its bottom (vault secret + `cron.schedule`, filling in `<project-ref>` and a random secret).
 5. **Edge function** (Supabase CLI):
    ```
-   supabase secrets set VAPID_PUBLIC_KEY=... VAPID_PRIVATE_KEY=... VAPID_SUBJECT=mailto:you@example.com CRON_SECRET=<same random secret as the vault one>
-   supabase functions deploy send-reminders --no-verify-jwt
+   npx supabase link --project-ref <20-letter ref from your Supabase URL, not the project name>
+   npx supabase secrets set 'VAPID_PUBLIC_KEY=...' 'VAPID_PRIVATE_KEY=...' 'VAPID_SUBJECT=mailto:you@example.com' 'CRON_SECRET=<same random secret as the vault one>'
+   npx supabase functions deploy send-reminders --no-verify-jwt
    ```
-6. Push to `main` so GitHub Pages rebuilds with the public key.
+   Quote each `NAME=value` (PowerShell) and paste the keys exactly: no quotes inside, no `=`, no
+   spaces. Add `--use-api` to the deploy if Docker isn't available. The public key here and in the
+   GitHub secret must be the same one.
+6. Push to `main` so GitHub Pages rebuilds with the public key. (The workflow runs only on push;
+   there is no "Run workflow" button.)
 
 ## Installing & testing
 
@@ -30,6 +35,19 @@ within ~5 minutes of the chosen time.
   (push doesn't work in a plain Safari tab).
 - Open the app, tap **🔔 הפעל התראות** and allow, then **שלח בדיקה** — a notification should arrive
   immediately. To test a real reminder, set one on an event ~5–10 minutes ahead.
+
+## Troubleshooting
+
+- **"Failed to send a request to the Edge Function"**: the browser couldn't reach it. Probe it with
+  `curl -X POST https://<ref>.supabase.co/functions/v1/send-reminders -d '{"test":true}'`:
+  `{"error":"unauthorized"}` is healthy; a `WORKER_ERROR` means the function crashed; a JSON error
+  names the problem (e.g. a malformed `VAPID_PUBLIC_KEY`).
+- **Changed the VAPID keys**: update the Supabase secrets and the GitHub secret, redeploy the site, then
+  on each phone tap 🔕 and **הפעל התראות** again (old subscriptions belong to the old key).
+- **No "הפעל התראות" banner**: the site was built without `VAPID_PUBLIC_KEY`, or the app isn't running
+  from the https site.
+- **Test works but a scheduled reminder doesn't arrive**: check that `CRON_SECRET` matches the vault
+  secret `reminders_cron_secret`, and `select * from cron.job_run_details order by start_time desc`.
 
 Limits: reminders go to every subscribed device of the band; a device that hasn't enabled
 notifications gets nothing. Editing the reminder time re-arms an already-sent reminder.
