@@ -24,7 +24,7 @@ jobs:
         env:
           SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
         run: |
-          pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges --clean --if-exists -f backup.sql
+          /usr/lib/postgresql/17/bin/pg_dump "$SUPABASE_DB_URL" --schema=public --no-owner --no-privileges --clean --if-exists -f backup.sql
           # Fail loudly rather than uploading an empty/partial backup
           grep -q 'CREATE TABLE public.bands' backup.sql
           grep -q 'COPY public.bands' backup.sql
