@@ -9,4 +9,5 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// PKCE keeps OAuth results in ?code=... instead of the URL hash, which the app uses for invite links.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey, { auth: { flowType: 'pkce' } });

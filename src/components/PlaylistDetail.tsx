@@ -5,21 +5,23 @@ import {
   deletePlaylist,
   removeSongFromPlaylist,
   reorderPlaylist,
+  setEventPlaylist,
   updatePlaylist,
 } from '../data/bandService';
 import type { Band } from '../types/band';
 import { newId } from '../utils/id';
-import { getPlaylistSongs, sortedEntries } from '../utils/playlists';
+import { getEventsForPlaylist, getPlaylistSongs, sortedEntries } from '../utils/playlists';
 
 interface PlaylistDetailProps {
   band: Band;
   playlistId: string;
   apply: (next: Promise<Band>) => void;
+  canEdit: boolean;
   onOpenSong: (songId: string) => void;
   onBack: () => void;
 }
 
-export function PlaylistDetail({ band, playlistId, apply, onOpenSong, onBack }: PlaylistDetailProps) {
+export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, onBack }: PlaylistDetailProps) {
   const playlist = band.playlists.find((p) => p.id === playlistId);
   const [addSongId, setAddSongId] = useState('');
   const [newSongName, setNewSongName] = useState('');
@@ -39,17 +41,16 @@ export function PlaylistDetail({ band, playlistId, apply, onOpenSong, onBack }: 
   const inList = new Set(playlist.entries.map((e) => e.songId));
   const available = band.songs.filter((s) => !inList.has(s.id));
   const nextPosition = playlist.entries.reduce((max, e) => Math.max(max, e.position), -1) + 1;
-  const takenEventIds = new Set(
-    band.playlists.filter((p) => p.id !== playlist.id && p.eventId).map((p) => p.eventId),
-  );
-  const linkableEvents = band.events.filter((e) => !takenEventIds.has(e.id));
+  const linkedEvents = getEventsForPlaylist(playlist.id, band.events);
+  const linkableEvents = band.events
+    .filter((e) => e.playlistId !== playlist.id)
+    .sort((a, b) => a.date.localeCompare(b.date));
 
-  const save = (fields: { name?: string; description?: string; eventId?: string | null }) => {
+  const save = (fields: { name?: string; description?: string }) => {
     apply(
       updatePlaylist(band.id, playlist.id, {
         name: fields.name ?? playlist.name,
         description: fields.description ?? playlist.description,
-        eventId: fields.eventId === undefined ? playlist.eventId : fields.eventId || undefined,
       }),
     );
   };
@@ -100,37 +101,70 @@ export function PlaylistDetail({ band, playlistId, apply, onOpenSong, onBack }: 
       </button>
 
       {/* key remounts the fields when the underlying value changes after a save */}
-      <div className="form-stack">
-        <label>
-          שם
-          <input
-            key={`n-${playlist.name}`}
-            type="text"
-            defaultValue={playlist.name}
-            onBlur={(e) => e.target.value.trim() && e.target.value !== playlist.name && save({ name: e.target.value.trim() })}
-          />
-        </label>
-        <label>
-          תיאור
-          <textarea
-            key={`d-${playlist.description}`}
-            rows={2}
-            defaultValue={playlist.description}
-            onBlur={(e) => e.target.value !== playlist.description && save({ description: e.target.value })}
-          />
-        </label>
-        <label>
-          אירוע
-          <select value={playlist.eventId ?? ''} onChange={(e) => save({ eventId: e.target.value })}>
-            <option value="">ללא אירוע</option>
-            {linkableEvents.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.date} · {event.label}
-              </option>
-            ))}
+      <fieldset className="plain-fieldset" disabled={!canEdit}>
+        <div className="form-stack">
+          <label>
+            שם
+            <input
+              key={`n-${playlist.name}`}
+              type="text"
+              defaultValue={playlist.name}
+              onBlur={(e) => e.target.value.trim() && e.target.value !== playlist.name && save({ name: e.target.value.trim() })}
+            />
+          </label>
+          <label>
+            תיאור
+            <textarea
+              key={`d-${playlist.description}`}
+              rows={2}
+              defaultValue={playlist.description}
+              onBlur={(e) => e.target.value !== playlist.description && save({ description: e.target.value })}
+            />
+          </label>
+        </div>
+      </fieldset>
+
+      <h3 className="section-title">אירועים ({linkedEvents.length})</h3>
+      {linkedEvents.length === 0 && <p className="muted">הפלייליסט לא מקושר לאף אירוע.</p>}
+      <ul className="item-list">
+        {linkedEvents.map((event) => (
+          <li key={event.id} className="order-row">
+            <span className="list-item">
+              <span className="list-item-title">{event.label}</span>
+              <span className="list-item-meta">{event.date}</span>
+            </span>
+            {canEdit && (
+              <button
+                type="button"
+                className="icon-btn danger"
+                onClick={() => apply(setEventPlaylist(band.id, event.id, null))}
+                aria-label="נתק מהאירוע"
+              >
+                ✕
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {canEdit && linkableEvents.length > 0 && (
+        <div className="inline-form">
+          <select
+            value=""
+            onChange={(e) => e.target.value && apply(setEventPlaylist(band.id, e.target.value, playlist.id))}
+          >
+            <option value="">קשר לאירוע…</option>
+            {linkableEvents.map((event) => {
+              const other = band.playlists.find((p) => p.id === event.playlistId);
+              return (
+                <option key={event.id} value={event.id}>
+                  {event.date} · {event.label}
+                  {other ? ` (מוחלף מ"${other.name}")` : ''}
+                </option>
+              );
+            })}
           </select>
-        </label>
-      </div>
+        </div>
+      )}
 
       <h3 className="section-title">שירים ({songs.length})</h3>
       {songs.length === 0 && <p className="muted">הפלייליסט ריק.</p>}
@@ -142,31 +176,35 @@ export function PlaylistDetail({ band, playlistId, apply, onOpenSong, onBack }: 
                 {index + 1}. {song.name}
               </span>
             </button>
-            <button type="button" className="icon-btn" onClick={() => move(index, -1)} disabled={index === 0} aria-label="הזז למעלה">
-              ▲
-            </button>
-            <button
-              type="button"
-              className="icon-btn"
-              onClick={() => move(index, 1)}
-              disabled={index === songs.length - 1}
-              aria-label="הזז למטה"
-            >
-              ▼
-            </button>
-            <button
-              type="button"
-              className="icon-btn danger"
-              onClick={() => apply(removeSongFromPlaylist(band.id, playlist.id, song.id))}
-              aria-label="הסר מהפלייליסט"
-            >
-              ✕
-            </button>
+            {canEdit && (
+              <>
+                <button type="button" className="icon-btn" onClick={() => move(index, -1)} disabled={index === 0} aria-label="הזז למעלה">
+                  ▲
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn"
+                  onClick={() => move(index, 1)}
+                  disabled={index === songs.length - 1}
+                  aria-label="הזז למטה"
+                >
+                  ▼
+                </button>
+                <button
+                  type="button"
+                  className="icon-btn danger"
+                  onClick={() => apply(removeSongFromPlaylist(band.id, playlist.id, song.id))}
+                  aria-label="הסר מהפלייליסט"
+                >
+                  ✕
+                </button>
+              </>
+            )}
           </li>
         ))}
       </ol>
 
-      {available.length > 0 && (
+      {canEdit && available.length > 0 && (
         <div className="inline-form">
           <select value={addSongId} onChange={(e) => setAddSongId(e.target.value)}>
             <option value="">הוסף שיר קיים…</option>
@@ -182,22 +220,26 @@ export function PlaylistDetail({ band, playlistId, apply, onOpenSong, onBack }: 
         </div>
       )}
 
-      <div className="inline-form">
-        <input
-          type="text"
-          placeholder="שם שיר חדש"
-          value={newSongName}
-          onChange={(e) => setNewSongName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreateSong()}
-        />
-        <button type="button" className="toggle-btn toggle-available" onClick={handleCreateSong}>
-          + צור והוסף
-        </button>
-      </div>
+      {canEdit && (
+        <>
+          <div className="inline-form">
+            <input
+              type="text"
+              placeholder="שם שיר חדש"
+              value={newSongName}
+              onChange={(e) => setNewSongName(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleCreateSong()}
+            />
+            <button type="button" className="toggle-btn toggle-available" onClick={handleCreateSong}>
+              + צור והוסף
+            </button>
+          </div>
 
-      <button type="button" className="delete-btn" onClick={handleDelete}>
-        מחק פלייליסט
-      </button>
+          <button type="button" className="delete-btn" onClick={handleDelete}>
+            מחק פלייליסט
+          </button>
+        </>
+      )}
     </div>
   );
 }

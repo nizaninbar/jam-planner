@@ -30,5 +30,13 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
 * Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links
 
+* Access control: personal invite links, optional Google sign-in, and admin / member / viewer roles enforced by Supabase RLS (see below)
+
+### Access setup (one time)
+1. In Supabase -> Authentication: allow **anonymous sign-ins** and **manual linking**, and enable the **Google** provider (Google Cloud OAuth client; allow the site URL as a redirect).
+2. Deploy the frontend, then run `supabase/migrate_06_add_iam.sql` in the SQL Editor. This drops the open policies, so the app is locked until the next step.
+3. Run `supabase/bootstrap_first_admin.sql`. Open `<site>/#/invite/<token>` it prints to become the first admin.
+4. In the app's **ניהול** tab, create a personal link per member. Opening it signs that person in; they are then prompted to attach a Google account for one-tap sign-in on other devices.
+
 ### Next up
 Nothing is committed yet; ideas are listed in [docs/GOALS.md](docs/GOALS.md).

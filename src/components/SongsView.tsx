@@ -6,10 +6,11 @@ import { getPlaylistsContainingSong } from '../utils/playlists';
 interface SongsViewProps {
   band: Band;
   apply: (next: Promise<Band>) => void;
+  canEdit: boolean;
   onOpenSong: (songId: string) => void;
 }
 
-export function SongsView({ band, apply, onOpenSong }: SongsViewProps) {
+export function SongsView({ band, apply, canEdit, onOpenSong }: SongsViewProps) {
   const [name, setName] = useState('');
 
   const [query, setQuery] = useState('');
@@ -31,18 +32,20 @@ export function SongsView({ band, apply, onOpenSong }: SongsViewProps) {
     <div className="page-container">
       <h2 className="page-title">שירים</h2>
 
-      <div className="inline-form">
-        <input
-          type="text"
-          placeholder="שם שיר חדש"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
-        />
-        <button type="button" className="toggle-btn toggle-available" onClick={handleCreate}>
-          + צור
-        </button>
-      </div>
+      {canEdit && (
+        <div className="inline-form">
+          <input
+            type="text"
+            placeholder="שם שיר חדש"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleCreate()}
+          />
+          <button type="button" className="toggle-btn toggle-available" onClick={handleCreate}>
+            + צור
+          </button>
+        </div>
+      )}
 
       {band.songs.length > 0 && (
         <div className="inline-form">

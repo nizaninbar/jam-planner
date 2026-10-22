@@ -8,6 +8,7 @@ interface RawEvent {
   label: string;
   type: EventType;
   location: string | null;
+  playlist_id: string | null;
 }
 
 interface RawAvailability {
@@ -29,7 +30,6 @@ interface RawPlaylist {
   id: string;
   name: string;
   description: string;
-  event_id: string | null;
   playlist_songs: { song_id: string; position: number }[];
 }
 
@@ -54,6 +54,7 @@ function mapBand(raw: RawBand): Band {
       type: g.type,
       label: g.label,
       location: g.location ?? undefined,
+      playlistId: g.playlist_id ?? undefined,
     })),
     availability: raw.availability.map((a) => ({
       memberId: a.member_id,
@@ -74,7 +75,6 @@ function mapBand(raw: RawBand): Band {
       id: p.id,
       name: p.name,
       description: p.description,
-      eventId: p.event_id ?? undefined,
       entries: [...p.playlist_songs]
         .sort((a, b) => a.position - b.position)
         .map((e) => ({ songId: e.song_id, position: e.position })),
@@ -86,7 +86,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs(id,date,label,type,location), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists(id,name,description,event_id,playlist_songs(song_id,position))',
+      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,playlist_id), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
     )
     .eq('id', bandId)
     .single();
@@ -231,14 +231,13 @@ export async function createPlaylist(
   bandId: string,
   name: string,
   description = '',
-  eventId?: string,
+  id: string = newId(),
 ): Promise<Band> {
   const { error } = await supabase.from('playlists').insert({
-    id: newId(),
+    id,
     band_id: bandId,
     name,
     description,
-    event_id: eventId ?? null,
   });
   if (error) fail('create playlist', error);
   return getBand(bandId);
@@ -247,13 +246,26 @@ export async function createPlaylist(
 export async function updatePlaylist(
   bandId: string,
   playlistId: string,
-  fields: { name: string; description: string; eventId?: string },
+  fields: { name: string; description: string },
 ): Promise<Band> {
   const { error } = await supabase
     .from('playlists')
-    .update({ name: fields.name, description: fields.description, event_id: fields.eventId ?? null })
+    .update({ name: fields.name, description: fields.description })
     .match({ id: playlistId, band_id: bandId });
   if (error) fail('update playlist', error);
+  return getBand(bandId);
+}
+
+export async function setEventPlaylist(
+  bandId: string,
+  eventId: string,
+  playlistId: string | null,
+): Promise<Band> {
+  const { error } = await supabase
+    .from('gigs')
+    .update({ playlist_id: playlistId })
+    .match({ id: eventId, band_id: bandId });
+  if (error) fail('link playlist to event', error);
   return getBand(bandId);
 }
 

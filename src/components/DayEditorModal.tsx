@@ -20,6 +20,8 @@ interface DayEditorModalProps {
   playlists: Playlist[];
   availability: Availability[];
   members: Member[];
+  canEditContent: boolean;
+  canEditAvailability: (memberId: string) => boolean;
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
   onCreateEvent: (type: EventType, label: string, location?: string) => void;
   onDeleteEvent: (eventId: string) => void;
@@ -35,6 +37,8 @@ export function DayEditorModal({
   playlists,
   availability,
   members,
+  canEditContent,
+  canEditAvailability,
   onToggle,
   onCreateEvent,
   onDeleteEvent,
@@ -59,8 +63,7 @@ export function DayEditorModal({
   }, [onClose]);
 
   const existingEvent = events.find((e) => e.date === toIsoDate(date));
-  const eventPlaylist = existingEvent ? getPlaylistForEvent(existingEvent.id, playlists) : undefined;
-  const unlinkedPlaylists = playlists.filter((p) => !p.eventId);
+  const eventPlaylist = existingEvent ? getPlaylistForEvent(existingEvent, playlists) : undefined;
 
   const handleAdd = () => {
     if (!label.trim()) {
@@ -91,16 +94,18 @@ export function DayEditorModal({
                 <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
                 {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
               </div>
-              <button type="button" className="modal-close" onClick={() => onDeleteEvent(existingEvent.id)} aria-label="הסר אירוע">
-                ✕
-              </button>
+              {canEditContent && (
+                <button type="button" className="modal-close" onClick={() => onDeleteEvent(existingEvent.id)} aria-label="הסר אירוע">
+                  ✕
+                </button>
+              )}
             </div>
             <div className="event-playlist">
               {eventPlaylist ? (
                 <button type="button" className="add-event-btn" onClick={() => onOpenPlaylist(eventPlaylist.id)}>
                   🎵 {eventPlaylist.name}
                 </button>
-              ) : (
+              ) : canEditContent ? (
                 <>
                   <button
                     type="button"
@@ -109,14 +114,14 @@ export function DayEditorModal({
                   >
                     + צור פלייליסט לאירוע
                   </button>
-                  {unlinkedPlaylists.length > 0 && (
+                  {playlists.length > 0 && (
                     <select
                       value=""
                       className="event-playlist-select"
                       onChange={(e) => e.target.value && onLinkPlaylist(e.target.value, existingEvent.id)}
                     >
                       <option value="">או קשר פלייליסט קיים…</option>
-                      {unlinkedPlaylists.map((p) => (
+                      {playlists.map((p) => (
                         <option key={p.id} value={p.id}>
                           {p.name}
                         </option>
@@ -124,10 +129,10 @@ export function DayEditorModal({
                     </select>
                   )}
                 </>
-              )}
+              ) : null}
             </div>
           </>
-        ) : isAdding ? (
+        ) : !canEditContent ? null : isAdding ? (
           <div className="event-form">
             <select value={type} onChange={(e) => setType(e.target.value as EventType)}>
               <option value="rehearsal-band-only">חזרה של הלהקה</option>
@@ -167,6 +172,7 @@ export function DayEditorModal({
               <button
                 type="button"
                 className={isAvailable ? 'toggle-btn toggle-available' : 'toggle-btn toggle-unavailable'}
+                disabled={!canEditAvailability(member.id)}
                 onClick={() => onToggle(member.id, isAvailable ? 'unavailable' : 'available')}
               >
                 {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}

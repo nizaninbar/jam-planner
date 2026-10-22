@@ -22,7 +22,8 @@ create table if not exists gigs (
   date date not null,
   label text not null,
   type text not null default 'gig' check (type in ('gig', 'rehearsal-guided', 'rehearsal-band-only')),
-  location text
+  location text,
+  playlist_id text -- fk -> playlists, added below (playlists is created later)
 );
 
 create table if not exists availability (
@@ -55,9 +56,12 @@ create table if not exists playlists (
   id text primary key,
   band_id text not null references bands(id) on delete cascade,
   name text not null,
-  description text not null default '',
-  event_id text unique references gigs(id) on delete set null
+  description text not null default ''
 );
+
+-- An event has at most one playlist; a playlist can be used by many events.
+alter table gigs add constraint gigs_playlist_id_fkey
+  foreign key (playlist_id) references playlists(id) on delete set null;
 
 create table if not exists playlist_songs (
   playlist_id text not null references playlists(id) on delete cascade,
@@ -82,9 +86,9 @@ create policy "public all song_links" on song_links for all using (true) with ch
 create policy "public all playlists" on playlists for all using (true) with check (true);
 create policy "public all playlist_songs" on playlist_songs for all using (true) with check (true);
 
--- RLS is enabled with fully open policies for now (no auth yet, same exposure as the
--- localStorage version it replaces). Auth will later tighten these policies without
--- needing a schema change.
+-- RLS is enabled with fully open policies here. For a fresh install, run
+-- supabase/migrate_06_add_iam.sql afterwards: it drops these open policies and adds
+-- roles, invites and role-based policies (then run bootstrap_first_admin.sql).
 alter table bands enable row level security;
 alter table members enable row level security;
 alter table gigs enable row level security;

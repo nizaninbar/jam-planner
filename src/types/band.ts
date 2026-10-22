@@ -13,6 +13,7 @@ export interface Event {
   type: EventType;
   label: string;
   location?: string;
+  playlistId?: string;
 }
 
 export interface Availability {
@@ -45,8 +46,16 @@ export interface Playlist {
   id: string;
   name: string;
   description: string;
-  eventId?: string;
   entries: PlaylistEntry[];
+}
+
+export type Role = 'admin' | 'member' | 'viewer';
+
+/** What the signed-in user is allowed to be in the band; memberId is absent for e.g. a viewer. */
+export interface Account {
+  bandId: string;
+  role: Role;
+  memberId?: string;
 }
 
 export interface Band {

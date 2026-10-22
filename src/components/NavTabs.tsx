@@ -1,20 +1,22 @@
-export type Section = 'calendar' | 'playlists' | 'songs';
+export type Section = 'calendar' | 'playlists' | 'songs' | 'admin';
 
 const TABS: { section: Section; icon: string; label: string }[] = [
   { section: 'calendar', icon: '🗓️', label: 'לוח שנה' },
   { section: 'playlists', icon: '🎵', label: 'פלייליסטים' },
   { section: 'songs', icon: '🎸', label: 'שירים' },
+  { section: 'admin', icon: '🔑', label: 'ניהול' },
 ];
 
 interface NavTabsProps {
   active: Section;
+  showAdmin: boolean;
   onSelect: (section: Section) => void;
 }
 
-export function NavTabs({ active, onSelect }: NavTabsProps) {
+export function NavTabs({ active, showAdmin, onSelect }: NavTabsProps) {
   return (
     <nav className="nav-tabs">
-      {TABS.map((tab) => (
+      {TABS.filter((tab) => showAdmin || tab.section !== 'admin').map((tab) => (
         <button
           key={tab.section}
           type="button"

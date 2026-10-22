@@ -783,3 +783,92 @@ body {
     line-height: 1;
   }
 }
+
+/* Identity & access */
+.plain-fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+
+.plain-fieldset:disabled input,
+.plain-fieldset:disabled textarea {
+  opacity: 0.8;
+}
+
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  padding: 10px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+}
+
+.banner > span {
+  flex: 1 1 200px;
+}
+
+.no-access {
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+  width: 100%;
+}
+
+.no-access-card {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: stretch;
+  max-width: 420px;
+  width: 100%;
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+}
+
+.no-access-card .toggle-btn,
+.no-access-card .modal-close {
+  min-height: 44px;
+}
+
+.link-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: var(--bg-hover);
+  border-radius: 12px;
+}
+
+.link-box input {
+  min-height: 44px;
+}
+
+.member-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  list-style: none;
+}
+
+.member-card-head {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.member-card .delete-btn {
+  margin-top: 4px;
+}

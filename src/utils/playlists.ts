@@ -1,4 +1,4 @@
-import type { Playlist, PlaylistEntry, Song } from '../types/band';
+import type { Event, Playlist, PlaylistEntry, Song } from '../types/band';
 
 export function sortedEntries(playlist: Playlist): PlaylistEntry[] {
   return [...playlist.entries].sort((a, b) => a.position - b.position);
@@ -16,8 +16,12 @@ export function getPlaylistsContainingSong(songId: string, playlists: Playlist[]
   return playlists.filter((p) => p.entries.some((e) => e.songId === songId));
 }
 
-export function getPlaylistForEvent(eventId: string, playlists: Playlist[]): Playlist | undefined {
-  return playlists.find((p) => p.eventId === eventId);
+export function getPlaylistForEvent(event: Event, playlists: Playlist[]): Playlist | undefined {
+  return playlists.find((p) => p.id === event.playlistId);
+}
+
+export function getEventsForPlaylist(playlistId: string, events: Event[]): Event[] {
+  return events.filter((e) => e.playlistId === playlistId).sort((a, b) => a.date.localeCompare(b.date));
 }
 
 export function isHttpUrl(value: string): boolean {

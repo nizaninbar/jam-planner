@@ -31,7 +31,7 @@ self-signup are not goals right now.
 ## Roadmap
 Nothing is currently committed; Playlists (v1) shipped.
 
-Ideas, not scheduled and unprioritized: user authentication, a middle availability state
+Ideas, not scheduled and unprioritized: member add/rename UI, a middle availability state
 ("prefer not"), an upcoming-events list, rehearsal-time suggestions, rehearsal attendance
 confirmation, setlist extras, a recordings library.
 
@@ -42,6 +42,23 @@ confirmation, setlist extras, a recordings library.
 - Shared Supabase backend (no per-browser localStorage)
 - Dates can be marked as a gig (with a location) or a rehearsal (guided or band-only)
 - Playlists: reusable songs with lyrics/chords/structure/links, ordered playlists, optional event link
+- Identity & access: admin-created personal invite link per member, optional Google attach for
+  sign-in from any device, roles admin / member / viewer enforced by RLS
+
+## Identity & access
+- **Roles:** `admin` (everything, plus member/account/invite management and future admin settings),
+  `member` (create/edit/delete events, songs, links, playlists; edit only their own availability),
+  `viewer` (read-only; may not be a band member). No account = no data.
+- **Sign-in:** an admin creates a one-time, 7-day link per member (no need to know their Google
+  account). Opening it creates an anonymous Supabase session bound to that member + role. The app
+  then recommends attaching Google (`linkIdentity`, same user id) so any other device can use
+  "Sign in with Google". A member may have several devices; claiming never kicks out another one.
+- **Schema:** `member_accounts` (user -> band/member/role), `invites` (sha256 token hash), security
+  definer functions `my_role`, `create_invite`, `claim_invite`, `admin_*`; see
+  `supabase/migrate_06_add_iam.sql`. Client side: `src/data/authService.ts` (the only auth caller)
+  and pure `src/utils/permissions.ts`.
+- **Portability:** the Supabase-specific parts are that migration, `auth.uid()` in the policies and
+  `authService.ts`; the rest of the app only sees an `Account { role, memberId }`.
 
 ## Playlists spec
 
@@ -73,13 +90,14 @@ Audio upload/playback, chord display and transposition, per-member parts, lyrics
 ### Implementation notes
 - **Types** (`src/types/band.ts`): `Link { id, description, url }`,
   `Song { id, name, lyrics?, chords?, structure?, links: Link[] }`,
-  `Playlist { id, name, description, eventId?, entries: { songId, position }[] }`. `Band` gains
+  `Playlist { id, name, description, entries: { songId, position }[] }`. `Band` gains
   `songs` and `playlists`.
 - **Schema** (new additive migration, like `supabase/migrate_01_*`):
   - `songs(id, band_id, name, lyrics, chords, structure)`
   - `song_links(id, song_id fk cascade, position, description, url)`
-  - `playlists(id, band_id, name, description, event_id unique null fk -> gigs on delete set null)`
-    (the events table is still named `gigs`)
+  - `playlists(id, band_id, name, description)`; events link to a playlist via
+    `gigs.playlist_id` (fk, on delete set null) so one playlist can serve many events
+    (the events table is still named `gigs`; see `supabase/migrate_05_*`)
   - `playlist_songs(playlist_id fk cascade, song_id fk cascade, position,
     primary key (playlist_id, song_id), unique (playlist_id, position) deferrable)`
   - RLS open like the other tables until auth exists.

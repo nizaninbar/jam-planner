@@ -7,11 +7,12 @@ interface SongDetailProps {
   band: Band;
   songId: string;
   apply: (next: Promise<Band>) => void;
+  canEdit: boolean;
   onOpenPlaylist: (playlistId: string) => void;
   onBack: () => void;
 }
 
-export function SongDetail({ band, songId, apply, onOpenPlaylist, onBack }: SongDetailProps) {
+export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBack }: SongDetailProps) {
   const song = band.songs.find((s) => s.id === songId);
   const [linkDescription, setLinkDescription] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
@@ -90,20 +91,22 @@ export function SongDetail({ band, songId, apply, onOpenPlaylist, onBack }: Song
         → חזרה
       </button>
 
-      <div className="form-stack">
-        <label>
-          שם
-          <input
-            key={`n-${song.name}`}
-            type="text"
-            defaultValue={song.name}
-            onBlur={(e) => e.target.value.trim() && e.target.value !== song.name && save({ name: e.target.value.trim() })}
-          />
-        </label>
-        {textField('מבנה', 'structure', 2)}
-        {textField('אקורדים', 'chords', 5, true)}
-        {textField('מילים', 'lyrics', 8)}
-      </div>
+      <fieldset className="plain-fieldset" disabled={!canEdit}>
+        <div className="form-stack">
+          <label>
+            שם
+            <input
+              key={`n-${song.name}`}
+              type="text"
+              defaultValue={song.name}
+              onBlur={(e) => e.target.value.trim() && e.target.value !== song.name && save({ name: e.target.value.trim() })}
+            />
+          </label>
+          {textField('מבנה', 'structure', 2)}
+          {textField('אקורדים', 'chords', 5, true)}
+          {textField('מילים', 'lyrics', 8)}
+        </div>
+      </fieldset>
 
       <h3 className="section-title">קישורים</h3>
       {song.links.length === 0 && <p className="muted">אין קישורים.</p>}
@@ -114,36 +117,40 @@ export function SongDetail({ band, songId, apply, onOpenPlaylist, onBack }: Song
               <span className="list-item-title">{link.description || link.url}</span>
               {link.description && <span className="list-item-meta link-url">{link.url}</span>}
             </a>
-            <button
-              type="button"
-              className="icon-btn danger"
-              onClick={() => apply(deleteSongLink(band.id, link.id))}
-              aria-label="מחק קישור"
-            >
-              ✕
-            </button>
+            {canEdit && (
+              <button
+                type="button"
+                className="icon-btn danger"
+                onClick={() => apply(deleteSongLink(band.id, link.id))}
+                aria-label="מחק קישור"
+              >
+                ✕
+              </button>
+            )}
           </li>
         ))}
       </ul>
-      <div className="form-stack">
-        <input
-          type="text"
-          placeholder="תיאור (למשל: הקלטת חזרה)"
-          value={linkDescription}
-          onChange={(e) => setLinkDescription(e.target.value)}
-        />
-        <input
-          type="url"
-          dir="ltr"
-          placeholder="https://…"
-          value={linkUrl}
-          onChange={(e) => setLinkUrl(e.target.value)}
-        />
-        {linkError && <p className="error-text">{linkError}</p>}
-        <button type="button" className="toggle-btn toggle-available" onClick={handleAddLink}>
-          + הוסף קישור
-        </button>
-      </div>
+      {canEdit && (
+        <div className="form-stack">
+          <input
+            type="text"
+            placeholder="תיאור (למשל: הקלטת חזרה)"
+            value={linkDescription}
+            onChange={(e) => setLinkDescription(e.target.value)}
+          />
+          <input
+            type="url"
+            dir="ltr"
+            placeholder="https://…"
+            value={linkUrl}
+            onChange={(e) => setLinkUrl(e.target.value)}
+          />
+          {linkError && <p className="error-text">{linkError}</p>}
+          <button type="button" className="toggle-btn toggle-available" onClick={handleAddLink}>
+            + הוסף קישור
+          </button>
+        </div>
+      )}
 
       <h3 className="section-title">מופיע בפלייליסטים</h3>
       {playlists.length === 0 && <p className="muted">השיר לא נמצא באף פלייליסט.</p>}
@@ -157,9 +164,11 @@ export function SongDetail({ band, songId, apply, onOpenPlaylist, onBack }: Song
         ))}
       </ul>
 
-      <button type="button" className="delete-btn" onClick={handleDelete}>
-        מחק שיר
-      </button>
+      {canEdit && (
+        <button type="button" className="delete-btn" onClick={handleDelete}>
+          מחק שיר
+        </button>
+      )}
     </div>
   );
 }
