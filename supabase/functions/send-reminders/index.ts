@@ -9,11 +9,14 @@ import webpush from 'npm:web-push@3.6.7';
 
 const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
 
-webpush.setVapidDetails(
-  Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@example.com',
-  Deno.env.get('VAPID_PUBLIC_KEY')!,
-  Deno.env.get('VAPID_PRIVATE_KEY')!,
-);
+// Done per request (not at startup) so a bad key becomes a readable error instead of a boot crash.
+function configureVapid() {
+  webpush.setVapidDetails(
+    Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@example.com',
+    Deno.env.get('VAPID_PUBLIC_KEY')!,
+    Deno.env.get('VAPID_PRIVATE_KEY')!,
+  );
+}
 
 interface Subscription {
   endpoint: string;
@@ -33,8 +36,17 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   'rehearsal-band-only': 'חזרה של הלהקה',
 };
 
+// The app calls this from the browser (the test button), so it must answer CORS preflight requests.
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
+};
+
 const json = (body: unknown, status = 200) =>
-  new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
+  new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  });
 
 // Returns true if the subscription is dead (gone/expired) and should be removed.
 async function push(sub: Subscription, payload: Payload): Promise<boolean> {
@@ -130,13 +142,22 @@ async function handleCron(): Promise<Response> {
 }
 
 Deno.serve(async (req) => {
-  const secret = Deno.env.get('CRON_SECRET');
-  if (secret && req.headers.get('x-cron-secret') === secret) {
-    return handleCron();
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
   }
-  const body = await req.json().catch(() => ({}));
-  if (body?.test) {
-    return handleTest(req);
+  try {
+    configureVapid();
+    const secret = Deno.env.get('CRON_SECRET');
+    if (secret && req.headers.get('x-cron-secret') === secret) {
+      return await handleCron();
+    }
+    const body = await req.json().catch(() => ({}));
+    if (body?.test) {
+      return await handleTest(req);
+    }
+    return json({ error: 'unauthorized' }, 401);
+  } catch (err) {
+    console.error(err);
+    return json({ error: (err as Error).message }, 500);
   }
-  return json({ error: 'unauthorized' }, 401);
 });
