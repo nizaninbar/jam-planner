@@ -2,9 +2,9 @@ import type { Account } from '../types/band';
 
 // UI convenience only: the real enforcement is the RLS policies in supabase/migrate_06_add_iam.sql.
 
-/** Events, songs, links and playlists. */
+/** Events, reminders, songs, links and playlists: admin only (members edit just their own availability). */
 export function canEditContent(account: Account): boolean {
-  return account.role === 'admin' || account.role === 'member';
+  return account.role === 'admin';
 }
 
 /** Admins edit anyone's availability; members only their own; viewers nobody's. */
