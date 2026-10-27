@@ -9,6 +9,15 @@ interface CalendarProps {
   onDayClick: (date: Date) => void;
 }
 
+// Explicit SVG, not ‹ ›: those glyphs may or may not be mirrored in RTL. Previous month sits on the right.
+function Chevron({ direction }: { direction: 'left' | 'right' }) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d={direction === 'right' ? 'M7 3l7 7-7 7' : 'M13 3l-7 7 7 7'} />
+    </svg>
+  );
+}
+
 function shiftMonth(year: number, month: number, delta: number): { year: number; month: number } {
   const total = year * 12 + month + delta;
   return { year: Math.floor(total / 12), month: ((total % 12) + 12) % 12 };
@@ -47,7 +56,7 @@ export function Calendar({ band, onDayClick }: CalendarProps) {
           aria-label="החודש הקודם"
           onClick={() => setVisible((v) => shiftMonth(v.year, v.month, -1))}
         >
-          ‹
+          <Chevron direction="right" />
         </button>
         <h2 className="month-title" aria-live="polite">
           {MONTH_NAMES[visible.month]} {visible.year}
@@ -58,7 +67,7 @@ export function Calendar({ band, onDayClick }: CalendarProps) {
           aria-label="החודש הבא"
           onClick={() => setVisible((v) => shiftMonth(v.year, v.month, 1))}
         >
-          ›
+          <Chevron direction="left" />
         </button>
         <button
           type="button"

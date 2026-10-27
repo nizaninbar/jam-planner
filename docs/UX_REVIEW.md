@@ -250,7 +250,7 @@ Comes before the calendar work, so new UI is built on the tokens.
 Files: `index.css`, `utils/theme.ts`, a new `ThemeToggle.tsx`, `AppHeader.tsx`, `index.html`.
 
 ### Phase D: calendar and day editor (UX-05–07, 09–13)
-Done 2026-10-27. Not yet checked in a browser or on a device (no Playwright run, no 44px measurements, RTL arrow direction not eyeballed: the ‹ › glyphs rely on browser bidi mirroring). UX-12 was already mostly done in PERM-03; this added `data-autofocus` on the user's own toggle and a larger toggle for that row. The modal moves focus to that toggle on open.
+Done 2026-10-27. Checked with headless Playwright against mocked Supabase responses (as a member), both themes, 360/430/1280px: no console errors, cells 58px+ on mobile, tabs 56px, modal buttons 44px+, focus moves into the dialog and returns to the cell on Esc, body scroll locks, mobile modal is a bottom sheet, no horizontal scroll. Fixes found by the run: the ‹ › glyphs were not mirrored in RTL (now SVG chevrons, previous on the right), the mobile cell showed both detail and compact content, the missing badge rendered reversed, and the header squeezed the band name (the pill wraps to its own row on mobile). Not checked: a real device, throttled network, tabbing with the keyboard through the grid. UX-12 was mostly done in PERM-03; this added `data-autofocus` on the user's own toggle and a larger toggle for that row.
 Files: `utils/calendar.ts` (`isToday`, `isPast`), `DayCell.tsx`, `MonthGrid.tsx`,
 `Calendar.tsx`, `Legend.tsx`, `NavTabs.tsx`, `DayEditorModal.tsx` (dialog semantics, bottom
 sheet, labelled form; current user first is mostly done in PERM-03), `index.css`.

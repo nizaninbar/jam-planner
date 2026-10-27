@@ -53,7 +53,7 @@ export function DayCell({ date, status, onClick }: DayCellProps) {
             <span key={member.id}>❌ {member.name}</span>
           ))}
         </span>
-        <span className="cell-compact cell-badge" aria-hidden="true">
+        <span className="cell-compact cell-badge" dir="ltr" aria-hidden="true">
           ‑{status.missingMembers.length}
         </span>
       </button>

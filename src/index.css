@@ -621,6 +621,13 @@ body {
 
   .app-header {
     padding: 0 8px;
+    flex-wrap: wrap;
+  }
+
+  .band-pill {
+    order: 3;
+    flex: 1 0 100%;
+    text-align: center;
   }
 
   .legend-item {
@@ -662,7 +669,7 @@ body {
     margin-bottom: 0;
   }
 
-  .cell-detail {
+  .day-cell .cell-detail {
     display: none;
   }
 
