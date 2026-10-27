@@ -1,3 +1,4 @@
+import logoUrl from '../assets/logo.svg';
 import { SettingsMenu } from './SettingsMenu';
 
 interface AppHeaderProps {
@@ -22,7 +23,8 @@ export function AppHeader({ bandId, bandName, googleLinked, onAttachGoogle, onSi
   return (
     <header className="app-header">
       <span className="app-brand" dir="ltr">
-        🎸 Jam Planner
+        <img className="app-logo" src={logoUrl} alt="" />
+        Jam Planner
       </span>
       <span className="band-pill">{bandName}</span>
       <SettingsMenu

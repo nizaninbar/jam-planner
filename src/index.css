@@ -1,73 +1,92 @@
 /* Semantic tokens. Dark is the default; the light values are below. An inline script in index.html sets data-theme before first paint. */
 :root {
-  --bg-main: #121212;
-  --bg-card: #181818;
-  --bg-hover: #282828;
-  --bg-hover-strong: #333333;
-  --text-main: #ffffff;
-  --text-muted: #a7a7a7;
-  --border-color: #333333;
+  --bg-main: #1a1024;
+  --bg-card: #26172f;
+  --bg-hover: #34213f;
+  --bg-hover-strong: #44294f;
+  --text-main: #fff6ec;
+  --text-muted: #c9b8d4;
+  --border-color: #4d3359;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --overlay: rgba(0, 0, 0, 0.6);
-  --focus-ring: #4f9dde;
+  --overlay: rgba(10, 4, 16, 0.65);
+  --focus-ring: #ffc93c;
 
-  --accent-1: #1db954;
-  --accent-2: #e91429;
-  --accent-3: #f5c518;
-  --accent-4: #4f9dde;
+  /* Sunset palette */
+  --accent-1: #ff4f9a;
+  --accent-2: #ff8a3d;
+  --accent-3: #ffc93c;
+  --accent-4: #2ec4b6;
+  --accent-5: #9b6bff;
 
-  --status-ok: var(--accent-1);
-  --status-missing: var(--accent-2);
+  /* Sticker cards: an ink outline and a hard offset shadow. */
+  --sticker-border: #0d0714;
+  --sticker-shadow: 5px 5px 0 var(--accent-1);
+  --header-gradient: linear-gradient(260deg, #7a2cc4 0%, #d6307f 55%, #ff8a3d 100%);
+  --on-header: #ffffff;
+  --on-accent: #1a0d24;
+  --sunburst: rgba(255, 79, 154, 0.05);
+
+  --status-ok: var(--accent-4);
+  --status-missing: #ff4d5e;
   --status-event: var(--accent-3);
-  --status-rehearsal: var(--accent-4);
+  --status-rehearsal: var(--accent-5);
 
   /* Readable text colours for each status, and soft fills. */
-  --status-ok-text: #1db954;
-  --status-missing-text: #ff8a8a;
-  --status-event-text: #f5c518;
-  --status-rehearsal-text: #4f9dde;
-  --tint-ok: rgba(29, 185, 84, 0.15);
-  --tint-missing: rgba(233, 20, 41, 0.15);
-  --tint-missing-faint: rgba(233, 20, 41, 0.05);
-  --tint-missing-border: rgba(233, 20, 41, 0.4);
-  --tint-event: rgba(245, 197, 24, 0.1);
-  --tint-rehearsal: rgba(79, 157, 222, 0.1);
+  --status-ok-text: #4fe3d3;
+  --status-missing-text: #ff8f9b;
+  --status-event-text: #ffd35c;
+  --status-rehearsal-text: #c2adff;
+  --tint-ok: rgba(46, 196, 182, 0.18);
+  --tint-missing: rgba(255, 77, 94, 0.18);
+  --tint-missing-faint: rgba(255, 77, 94, 0.07);
+  --tint-missing-border: rgba(255, 77, 94, 0.45);
+  --tint-event: rgba(255, 201, 60, 0.14);
+  --tint-rehearsal: rgba(155, 107, 255, 0.16);
 
   /* Old names, kept as aliases. */
   --accent-green: var(--status-ok);
   --accent-red: var(--status-missing);
   --accent-gold: var(--status-event);
   --accent-blue: var(--status-rehearsal);
+  --font-display: 'Secular One', 'Rubik', sans-serif;
   color-scheme: dark;
 }
 
 :root[data-theme='light'] {
-  --bg-main: #f4f1ea;
-  --bg-card: #ffffff;
-  --bg-hover: #ece8df;
-  --bg-hover-strong: #ddd8cc;
-  --text-main: #1a1a1a;
-  --text-muted: #595959;
-  --border-color: #cfc9ba;
-  --shadow: 0 6px 18px rgba(40, 30, 10, 0.15);
-  --overlay: rgba(20, 15, 5, 0.45);
-  --focus-ring: #1c5fa0;
+  --bg-main: #fdf0d8;
+  --bg-card: #fffaf0;
+  --bg-hover: #f7e6c6;
+  --bg-hover-strong: #eed7a9;
+  --text-main: #2b1838;
+  --text-muted: #6b5576;
+  --border-color: #d9c29a;
+  --shadow: 0 6px 18px rgba(60, 30, 10, 0.18);
+  --overlay: rgba(43, 24, 56, 0.5);
+  --focus-ring: #5a30c0;
 
-  --accent-1: #17a34a;
-  --accent-2: #d3122a;
+  --accent-1: #e0206f;
+  --accent-2: #f06a12;
   --accent-3: #d9a400;
-  --accent-4: #2f80d0;
+  --accent-4: #0e9f90;
+  --accent-5: #7a4de0;
 
-  --status-ok-text: #0b6b2f;
+  --sticker-border: #2b1838;
+  --on-accent: #ffffff;
+  --sticker-shadow: 5px 5px 0 var(--accent-2);
+  --header-gradient: linear-gradient(260deg, #8a3fd6 0%, #e0206f 55%, #f58a1f 100%);
+  --sunburst: rgba(240, 106, 18, 0.1);
+
+  --status-missing: #d3122a;
+  --status-ok-text: #0a6b61;
   --status-missing-text: #b3001b;
   --status-event-text: #7a5800;
-  --status-rehearsal-text: #1c5fa0;
-  --tint-ok: rgba(23, 163, 74, 0.15);
+  --status-rehearsal-text: #5a30c0;
+  --tint-ok: rgba(14, 159, 144, 0.16);
   --tint-missing: rgba(211, 18, 42, 0.12);
   --tint-missing-faint: rgba(211, 18, 42, 0.06);
   --tint-missing-border: rgba(211, 18, 42, 0.4);
-  --tint-event: rgba(217, 164, 0, 0.18);
-  --tint-rehearsal: rgba(47, 128, 208, 0.12);
+  --tint-event: rgba(217, 164, 0, 0.2);
+  --tint-rehearsal: rgba(122, 77, 224, 0.12);
   color-scheme: light;
 }
 
@@ -81,8 +100,11 @@ html {
 }
 
 body {
-  font-family: 'Heebo', sans-serif;
+  font-family: 'Rubik', sans-serif;
   background-color: var(--bg-main);
+  /* A faint sunburst fanning out from above the page. */
+  background-image: repeating-conic-gradient(from 0deg at 50% -8%, var(--sunburst) 0deg 7.5deg, transparent 7.5deg 15deg);
+  background-attachment: fixed;
   color: var(--text-main);
   margin: 0;
   padding: 40px 20px;
@@ -107,9 +129,10 @@ body {
   max-width: 1000px;
   width: 100%;
   background-color: var(--bg-card);
+  border: 2px solid var(--sticker-border);
   border-radius: 16px;
   padding: 40px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--sticker-shadow);
 }
 
 .app-header {
@@ -117,13 +140,31 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  padding: 10px 16px;
+  background: var(--header-gradient);
+  color: var(--on-header, #fff);
+  border: 2px solid var(--sticker-border);
+  border-radius: 20px;
+  box-shadow: 3px 3px 0 var(--sticker-border);
 }
 
 .app-brand {
-  font-size: 1.5rem;
-  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 400;
+  letter-spacing: 0.5px;
   white-space: nowrap;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
+}
+
+.app-logo {
+  width: 40px;
+  height: 40px;
+  flex: none;
 }
 
 .band-pill {
@@ -131,8 +172,8 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: var(--bg-hover);
-  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.28);
+  color: #fff;
   border-radius: 20px;
   padding: 8px 16px;
   font-weight: 500;
@@ -244,12 +285,13 @@ body {
 }
 
 .month-title {
+  font-family: var(--font-display);
   flex: 1;
   min-width: 0;
   margin: 0;
   text-align: center;
-  font-size: 1.4rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 400;
 }
 
 .grid {
@@ -416,7 +458,8 @@ body {
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: var(--shadow);
+  border: 2px solid var(--sticker-border);
+  box-shadow: var(--sticker-shadow);
 }
 
 .modal-header {
@@ -430,8 +473,9 @@ body {
 
 .modal-header h3 {
   margin: 0;
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 400;
 }
 
 .modal-close {
@@ -620,8 +664,18 @@ body {
   }
 
   .app-header {
-    padding: 0 8px;
+    padding: 8px 12px;
     flex-wrap: wrap;
+  }
+
+  .app-logo {
+    width: 34px;
+    height: 34px;
+  }
+
+  .calendar-container,
+  .page-container {
+    box-shadow: 3px 3px 0 var(--accent-1);
   }
 
   .band-pill {
@@ -722,43 +776,48 @@ body {
   min-height: 44px;
   background: transparent;
   color: var(--text-muted);
-  border: none;
-  border-bottom: 3px solid transparent;
-  border-radius: 0;
+  border: 2px solid transparent;
+  border-radius: 999px;
   font-family: inherit;
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
   white-space: nowrap;
-  padding: 0 16px;
+  padding: 0 18px;
 }
 
 .nav-tab:hover {
   color: var(--text-main);
 }
 
-.nav-tab-active {
-  color: var(--text-main);
-  border-bottom-color: var(--status-ok);
+.nav-tab-active,
+.nav-tab-active:hover {
+  background: var(--accent-1);
+  color: var(--on-accent);
+  border-color: var(--sticker-border);
+  box-shadow: 2px 2px 0 var(--sticker-border);
 }
 
 .page-container {
   background-color: var(--bg-card);
+  border: 2px solid var(--sticker-border);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: var(--shadow);
+  box-shadow: var(--sticker-shadow);
 }
 
 .page-title {
   margin: 0 0 16px;
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 400;
 }
 
 .section-title {
   margin: 24px 0 8px;
-  font-size: 1.1rem;
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 400;
 }
 
 .muted {
@@ -966,12 +1025,17 @@ body {
     min-height: 56px;
     padding: 0 4px;
     font-size: 0.75rem;
-    border-bottom: none;
+    border: none;
     border-top: 3px solid transparent;
+    border-radius: 0;
   }
 
-  .nav-tab-active {
-    border-top-color: var(--status-ok);
+  .nav-tab-active,
+  .nav-tab-active:hover {
+    background: none;
+    color: var(--text-main);
+    box-shadow: none;
+    border-top-color: var(--accent-1);
   }
 
   .nav-tab-icon {
@@ -1057,6 +1121,8 @@ body {
   max-width: 420px;
   width: 100%;
   background: var(--bg-card);
+  border: 2px solid var(--sticker-border);
+  box-shadow: var(--sticker-shadow);
   border-radius: 16px;
   padding: 24px;
   text-align: center;
@@ -1149,8 +1215,9 @@ body {
 }
 
 .btn-primary {
-  background: var(--status-ok);
-  color: #0a0a0a;
+  background: var(--accent-1);
+  color: var(--on-accent);
+  border-color: var(--sticker-border);
 }
 
 .btn-secondary {
@@ -1298,8 +1365,9 @@ body {
 
 .song-reader-title {
   margin: 0;
-  font-size: 1.6rem;
-  font-weight: 800;
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  font-weight: 400;
 }
 
 .song-reader-structure {
@@ -1349,5 +1417,30 @@ body {
 @keyframes skeleton-pulse {
   50% {
     opacity: 0.45;
+  }
+}
+
+/* Playful motion: only for people who haven't asked for less, and only where there is a real hover. */
+@media (prefers-reduced-motion: no-preference) {
+  .btn,
+  .nav-tab,
+  .today-chip,
+  .app-logo {
+    transition: transform 0.15s;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) and (hover: hover) {
+  .btn:hover,
+  .today-chip:hover {
+    transform: translate(-1px, -2px) rotate(-1deg);
+  }
+
+  .nav-tab:not(.nav-tab-active):hover {
+    transform: translateY(-2px);
+  }
+
+  .app-brand:hover .app-logo {
+    transform: rotate(20deg) scale(1.08);
   }
 }

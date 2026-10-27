@@ -215,17 +215,17 @@ come first.
   choice in `localStorage` inside try/catch. An inline script in `index.html` sets `data-theme`
   before first paint and updates `<meta name="theme-color">`.
 - [x] **STY-04: Contrast.** Text and status colours meet WCAG AA in both themes.
-- [ ] **STY-05: Groovy palette.** Apply the direction above to both themes.
-- [ ] **STY-06: Typography.** Use Hebrew-capable Google Fonts: a chunky display face for
+- [x] **STY-05: Groovy palette.** Apply the direction above to both themes.
+- [x] **STY-06: Typography.** Use Hebrew-capable Google Fonts: a chunky display face for
   headings and the brand (Secular One or Suez One) and Rubik for body text, replacing Heebo.
-- [ ] **STY-07: Visual details.** Add a gradient header band, "sticker" cards with offset
+- [x] **STY-07: Visual details.** Add a gradient header band, "sticker" cards with offset
   shadows, pill-shaped tabs and chips, and a subtle CSS-only sunburst/wave background. Add
   playful motion only under `prefers-reduced-motion: no-preference` and `(hover: hover)`.
-- [ ] **STY-08: Logo.** Design 2–3 SVG options (sunburst + vinyl/guitar pick + "Jam" lettering)
+- [x] **STY-08: Logo.** Design 2–3 SVG options (sunburst + vinyl/guitar pick + "Jam" lettering)
   and pick one. It becomes `src/assets/logo.svg` (inline in `AppHeader`, replacing 🎸) and
   `public/favicon.svg`. Regenerate `icon-192.png`, `icon-512.png`, a maskable icon and
   `apple-touch-icon.png` from it.
-- [ ] **STY-09: PWA.** Update the manifest colours, list separate `any` and `maskable` icons,
+- [x] **STY-09: PWA.** Update the manifest colours, list separate `any` and `maskable` icons,
   and add the icon links to `index.html`.
 
 ## Implementation phases
@@ -263,6 +263,7 @@ theme toggle moved into a menu, and the loading skeleton. Draw the UX-23 SVG ico
 logo's line style.
 
 ### Phase F: groovy visual pass and logo (STY-05–09)
+Done 2026-10-27. Build and lint pass. Checked with headless Playwright against mocked Supabase (as an admin), both themes, 360/430/1280px: no console errors, no horizontal scroll, fonts load, buttons/tabs/cells at least 44px at 360px. Fix from the run: the header gradient was flipped so the white brand text sits on the purple end, not the orange. Not checked: contrast ratios with a tool, the installed PWA icon and maskable crop on a device. Only one logo was drawn (a vinyl record with a guitar-pick label on a sunburst), not 2–3 options. The mark has no "Jam" lettering; the wordmark is the header text in Secular One. `logo.svg` is used via `<img>` in `AppHeader`, not inlined. Status colours changed: ok is teal, rehearsal is purple, missing is red, event is mustard. `icon-maskable-512.png` and `apple-touch-icon.png` are full-bleed; the `any` icons have rounded corners. PNGs were rendered with a throwaway Playwright script outside the repo. Fonts load from Google Fonts, so offline they fall back to sans-serif. The calendar event and nav-tab emoji are still emoji (UX-23's remainder).
 Files: `index.css`, `index.html`, `AppHeader.tsx`, `src/assets/logo.svg`, `public/` icons and
 manifest. Render the PNG icons with a throwaway script in a scratch dir, not the repo.
 
