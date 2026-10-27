@@ -34,6 +34,7 @@ interface DayEditorModalProps {
   currentMemberId?: string;
   canEditContent: boolean;
   canEditAvailability: (memberId: string) => boolean;
+  pendingMemberIds: ReadonlySet<string>;
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
   onCreateEvent: (type: EventType, label: string, location?: string) => void;
   onDeleteEvent: (eventId: string) => void;
@@ -53,6 +54,7 @@ export function DayEditorModal({
   currentMemberId,
   canEditContent,
   canEditAvailability,
+  pendingMemberIds,
   onToggle,
   onCreateEvent,
   onDeleteEvent,
@@ -79,6 +81,12 @@ export function DayEditorModal({
 
   const existingEvent = events.find((e) => e.date === toIsoDate(date));
   const eventPlaylist = existingEvent ? getPlaylistForEvent(existingEvent, playlists) : undefined;
+
+  const handleDelete = (event: Event) => {
+    if (window.confirm(`למחוק את "${event.label}"? הקישור לפלייליסט והתזכורת יוסרו גם הם.`)) {
+      onDeleteEvent(event.id);
+    }
+  };
 
   const handleAdd = () => {
     if (!label.trim()) {
@@ -109,11 +117,6 @@ export function DayEditorModal({
                 <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
                 {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
               </div>
-              {canEditContent && (
-                <button type="button" className="modal-close" onClick={() => onDeleteEvent(existingEvent.id)} aria-label="הסר אירוע">
-                  ✕
-                </button>
-              )}
             </div>
             <div className="event-playlist">
               {eventPlaylist ? (
@@ -165,13 +168,8 @@ export function DayEditorModal({
                 {existingEvent.remindAt && (
                   <>
                     <span className="event-reminder-state">{existingEvent.reminderSent ? 'נשלחה ✓' : 'ממתינה'}</span>
-                    <button
-                      type="button"
-                      className="modal-close"
-                      onClick={() => onSetReminder(existingEvent.id, null)}
-                      aria-label="הסר תזכורת"
-                    >
-                      ✕
+                    <button type="button" className="text-btn" onClick={() => onSetReminder(existingEvent.id, null)}>
+                      הסר תזכורת
                     </button>
                   </>
                 )}
@@ -182,6 +180,11 @@ export function DayEditorModal({
                   🔔 תזכורת: {formatReminder(existingEvent.remindAt)}
                 </div>
               )
+            )}
+            {canEditContent && (
+              <button type="button" className="text-btn danger event-delete-btn" onClick={() => handleDelete(existingEvent)}>
+                מחק אירוע
+              </button>
             )}
           </>
         ) : !canEditContent ? null : isAdding ? (
@@ -202,7 +205,7 @@ export function DayEditorModal({
               <button type="button" className="toggle-btn toggle-available" onClick={handleAdd}>
                 הוסף
               </button>
-              <button type="button" className="modal-close" onClick={() => setIsAdding(false)}>
+              <button type="button" className="text-btn" onClick={() => setIsAdding(false)}>
                 ביטול
               </button>
             </div>
@@ -229,6 +232,7 @@ export function DayEditorModal({
                   <button
                     type="button"
                     className={isAvailable ? 'toggle-btn toggle-available' : 'toggle-btn toggle-unavailable'}
+                    disabled={pendingMemberIds.has(member.id)}
                     onClick={() => onToggle(member.id, isAvailable ? 'unavailable' : 'available')}
                   >
                     {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}

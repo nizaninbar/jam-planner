@@ -28,28 +28,28 @@ Ground rules for every item:
 
 ### 🔴 Critical: lockout, data loss, broken flows
 
-- [ ] **UX-01: Signing out of an invite-only session is a permanent lockout.**
+- [x] **UX-01: Signing out of an invite-only session is a permanent lockout.**
   `AppHeader.tsx` signs out on one tap of an unclear ⎋ glyph. A member without Google attached
   has only an anonymous session, so once signed out they can't get back in without a new invite.
   **Fix:** pass `googleLinked` to `AppHeader`. Always confirm before signing out. When Google is
   not linked, the warning should say so plainly ("you'll need a new invite link, so attach Google
   first"). Give the button a clearer icon and text.
 
-- [ ] **UX-02: Deleting an event takes one tap and has no confirmation.**
+- [x] **UX-02: Deleting an event takes one tap and has no confirmation.**
   In `DayEditorModal.tsx` the delete control is a ✕ with the same `.modal-close` style as the
   close-modal ✕ just above it. "Remove reminder" is a third identical ✕. A mis-tap deletes the
   event along with its playlist link and reminder.
   **Fix:** a text button "מחק אירוע" plus `window.confirm`, following the
   `PlaylistDetail.handleDelete` pattern. Give "remove reminder" its own small labelled button.
 
-- [ ] **UX-03: Any failed mutation replaces the whole app with an error screen.**
+- [x] **UX-03: Any failed mutation replaces the whole app with an error screen.**
   In `App.tsx`, `apply`, `handleToggle`, `handleCreateEvent` and the others all call `setError`,
   and that renders only "שגיאה בטעינת הנתונים". A single network blip wipes the UI and needs a
   reload.
   **Fix:** keep the full-screen error for the initial load only. Mutation errors go to a
   dismissible toast: a new small `Toast` component with an `aria-live` region and auto-dismiss.
 
-- [ ] **UX-04: Saving gives no feedback, and a double tap toggles twice.**
+- [x] **UX-04: Saving gives no feedback, and a double tap toggles twice.**
   Each mutation re-fetches the whole band, so an availability tap shows nothing for about 0.5–1s.
   **Fix:** make availability optimistic. In `handleToggle`, patch `band.availability` locally,
   then `setBand(result)`, or revert and show a toast on error. Track the pending `memberId` and
@@ -75,7 +75,7 @@ Ground rules for every item:
   **Fix:** make them `<button type="button">` in `DayCell.tsx`, with an `aria-label` such as
   "24 באוקטובר, חסרים: דני" or "…, הופעה: <label>". Reset the button's default styles in CSS.
 
-- [ ] **UX-08: The hover lift sticks after a tap on touch screens.**
+- [x] **UX-08: The hover lift sticks after a tap on touch screens.**
   **Fix:** wrap `.day-cell:not(.empty):hover` in `@media (hover: hover)`.
 
 - [ ] **UX-09: The month header takes too much height and doesn't follow the usual pattern.**
@@ -114,7 +114,7 @@ Ground rules for every item:
   **Fix:** visible labels, the same pattern as `.form-stack label`. Show an inline error when the
   title is empty. Use proper primary and secondary button styles.
 
-- [ ] **UX-14: iOS zooms in when a modal input gets focus.**
+- [x] **UX-14: iOS zooms in when a modal input gets focus.**
   `.event-form select, .event-form input` are `0.9rem`, under 16px.
   **Fix:** make them `1rem` with `min-height: 44px`, as the `.page-container` inputs already are.
 
@@ -164,10 +164,10 @@ Ground rules for every item:
   Emoji render differently on each OS, and ⎋ and ⓘ are obscure. For now, keep one consistent set.
   Longer term, replace them with an inline SVG icon set.
 
-- [ ] **UX-24: Custom buttons have no `:focus-visible` style.**
+- [x] **UX-24: Custom buttons have no `:focus-visible` style.**
   **Fix:** add a global `:focus-visible { outline: 2px solid var(--accent-blue); outline-offset: 2px; }`.
 
-- [ ] **UX-25: The PWA theme colour doesn't match the background.**
+- [x] **UX-25: The PWA theme colour doesn't match the background.**
   `index.html` `theme-color` is `#0f1117`, but `--bg-main` is `#121212`. **Fix:** use `#121212`.
 
 - [ ] **UX-26: The loading state is plain "טוען…" text.**
@@ -238,6 +238,7 @@ with an admin, a member and a viewer account. As a member, a direct insert into 
 must be rejected by RLS.
 
 ### Phase B: safety and feedback (UX-01–04, 08, 14, 24, 25)
+Done 2026-10-27. Nothing deferred; no manual steps. Not yet checked on a device or throttled network (no Playwright run). `theme-color` is `#121212` for now; Phase C makes it follow the theme.
 Small, low-risk changes that remove the lockout, data-loss and dead-end cases.
 Files: `AppHeader.tsx`, `DayEditorModal.tsx`, `App.tsx` (split the load error from the mutation
 toast, optimistic availability), a new `Toast.tsx`, `index.css`, `index.html`. For UX-25, match

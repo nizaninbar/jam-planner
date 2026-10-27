@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
@@ -7,6 +7,7 @@ import { NotificationsBanner } from './components/NotificationsBanner';
 import { MembersAdminView } from './components/MembersAdminView';
 import { NavTabs, type Section } from './components/NavTabs';
 import { NoAccessScreen } from './components/NoAccessScreen';
+import { Toast } from './components/Toast';
 import { PlaylistDetail } from './components/PlaylistDetail';
 import { PlaylistsView } from './components/PlaylistsView';
 import { SongDetail } from './components/SongDetail';
@@ -32,7 +33,7 @@ import {
   setMemberAvailability,
 } from './data/bandService';
 import type { Account, AvailabilityStatus, Band, EventType } from './types/band';
-import { toIsoDate } from './utils/calendar';
+import { getMemberStatus, toIsoDate } from './utils/calendar';
 import { newId } from './utils/id';
 import { canEditAvailability, canEditContent, canManageAccess } from './utils/permissions';
 
@@ -69,6 +70,12 @@ async function loadSession(oauthError: string | null, inviteToken: string | null
   return { auth: { status: 'ready', account, googleLinked }, band };
 }
 
+// Applies an availability change locally (absence of a record means available).
+function patchAvailability(band: Band, memberId: string, date: string, status: AvailabilityStatus): Band {
+  const others = band.availability.filter((a) => !(a.memberId === memberId && a.date === date));
+  return { ...band, availability: status === 'available' ? others : [...others, { memberId, date, status }] };
+}
+
 // Module-level so React StrictMode's double effect doesn't consume the invite token twice.
 let bootstrap: Promise<Session> | null = null;
 
@@ -76,6 +83,9 @@ function App() {
   const [auth, setAuth] = useState<AuthState>({ status: 'loading' });
   const [band, setBand] = useState<Band | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [pendingMemberIds, setPendingMemberIds] = useState<ReadonlySet<string>>(new Set());
+  const dismissToast = useCallback(() => setToast(null), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<View>({ section: 'calendar' });
 
@@ -90,7 +100,7 @@ function App() {
   }, []);
 
   const handleGoogle = (action: () => Promise<void>) => {
-    action().catch((err: Error) => setError(err.message));
+    action().catch((err: Error) => setToast(err.message));
   };
 
   const handleSignOut = () => {
@@ -100,7 +110,7 @@ function App() {
         setView({ section: 'calendar' });
         setAuth({ status: 'none', message: null, signedIn: false });
       })
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => setToast(err.message));
   };
 
   if (error) {
@@ -133,9 +143,23 @@ function App() {
     if (!selectedDate || !canEditAvailability(account, memberId)) {
       return;
     }
-    setMemberAvailability(band.id, memberId, toIsoDate(selectedDate), nextStatus)
+    const date = toIsoDate(selectedDate);
+    const previousStatus = getMemberStatus(band.availability, memberId, selectedDate);
+    setBand((current) => current && patchAvailability(current, memberId, date, nextStatus));
+    setPendingMemberIds((ids) => new Set(ids).add(memberId));
+    setMemberAvailability(band.id, memberId, date, nextStatus)
       .then(setBand)
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => {
+        setBand((current) => current && patchAvailability(current, memberId, date, previousStatus));
+        setToast(err.message);
+      })
+      .finally(() =>
+        setPendingMemberIds((ids) => {
+          const next = new Set(ids);
+          next.delete(memberId);
+          return next;
+        }),
+      );
   };
 
   const handleCreateEvent = (type: EventType, label: string, location?: string) => {
@@ -144,17 +168,17 @@ function App() {
     }
     createEvent(band.id, toIsoDate(selectedDate), type, label, location)
       .then(setBand)
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => setToast(err.message));
   };
 
   const handleDeleteEvent = (eventId: string) => {
     deleteEvent(band.id, eventId)
       .then(setBand)
-      .catch((err: Error) => setError(err.message));
+      .catch((err: Error) => setToast(err.message));
   };
 
   const apply = (next: Promise<Band>) => {
-    next.then(setBand).catch((err: Error) => setError(err.message));
+    next.then(setBand).catch((err: Error) => setToast(err.message));
   };
 
   const openPlaylist = (playlistId: string) => {
@@ -175,7 +199,7 @@ function App() {
 
   return (
     <div className="app-shell">
-      <AppHeader bandName={band.name} onSignOut={handleSignOut} />
+      <AppHeader bandName={band.name} googleLinked={auth.googleLinked} onSignOut={handleSignOut} />
       {!auth.googleLinked && <GoogleBanner onAttach={() => handleGoogle(attachGoogle)} />}
       <NotificationsBanner bandId={band.id} />
       <NavTabs
@@ -226,6 +250,7 @@ function App() {
           currentMemberId={account.memberId}
           canEditContent={editContent}
           canEditAvailability={(memberId) => canEditAvailability(account, memberId)}
+          pendingMemberIds={pendingMemberIds}
           onToggle={handleToggle}
           onCreateEvent={handleCreateEvent}
           onDeleteEvent={handleDeleteEvent}
@@ -236,6 +261,7 @@ function App() {
           onClose={() => setSelectedDate(null)}
         />
       )}
+      <Toast message={toast} onDismiss={dismissToast} />
     </div>
   );
 }

@@ -213,9 +213,11 @@ body {
   cursor: pointer;
 }
 
-.day-cell:not(.empty):hover {
-  transform: translateY(-2px);
-  background-color: #333;
+@media (hover: hover) {
+  .day-cell:not(.empty):hover {
+    transform: translateY(-2px);
+    background-color: #333;
+  }
 }
 
 .day-cell.empty {
@@ -392,8 +394,78 @@ body {
   border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 8px 12px;
+  min-height: 44px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 1rem;
+}
+
+.text-btn {
+  min-height: 44px;
+  padding: 0 14px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  color: var(--text-muted);
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.text-btn.danger {
+  color: #ff8a8a;
+  border-color: rgba(233, 20, 41, 0.4);
+}
+
+.event-delete-btn {
+  margin-bottom: 12px;
+}
+
+.toast-region {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.toast {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 480px;
+  padding: 4px 4px 4px 16px;
+  background: var(--bg-card);
+  color: var(--text-main);
+  border: 1px solid var(--accent-red);
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+
+.toast-close {
+  min-width: 44px;
+  min-height: 44px;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.toggle-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+.signout-warning {
+  color: var(--accent-gold);
 }
 
 .event-form-actions {
