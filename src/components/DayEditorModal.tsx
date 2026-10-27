@@ -31,6 +31,7 @@ interface DayEditorModalProps {
   playlists: Playlist[];
   availability: Availability[];
   members: Member[];
+  currentMemberId?: string;
   canEditContent: boolean;
   canEditAvailability: (memberId: string) => boolean;
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
@@ -49,6 +50,7 @@ export function DayEditorModal({
   playlists,
   availability,
   members,
+  currentMemberId,
   canEditContent,
   canEditAvailability,
   onToggle,
@@ -213,23 +215,32 @@ export function DayEditorModal({
 
         <div className="modal-divider" />
 
-        {members.map((member) => {
-          const status = getMemberStatus(availability, member.id, date);
-          const isAvailable = status === 'available';
-          return (
-            <div className="modal-row" key={member.id}>
-              <span>{member.name}</span>
-              <button
-                type="button"
-                className={isAvailable ? 'toggle-btn toggle-available' : 'toggle-btn toggle-unavailable'}
-                disabled={!canEditAvailability(member.id)}
-                onClick={() => onToggle(member.id, isAvailable ? 'unavailable' : 'available')}
-              >
-                {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}
-              </button>
-            </div>
-          );
-        })}
+        {[...members]
+          .sort((a, b) => Number(b.id === currentMemberId) - Number(a.id === currentMemberId))
+          .map((member) => {
+            const status = getMemberStatus(availability, member.id, date);
+            const isAvailable = status === 'available';
+            const editable = canEditAvailability(member.id);
+            const isMe = member.id === currentMemberId;
+            return (
+              <div className="modal-row" key={member.id}>
+                <span>{isMe ? `${member.name} (את/ה)` : member.name}</span>
+                {editable ? (
+                  <button
+                    type="button"
+                    className={isAvailable ? 'toggle-btn toggle-available' : 'toggle-btn toggle-unavailable'}
+                    onClick={() => onToggle(member.id, isAvailable ? 'unavailable' : 'available')}
+                  >
+                    {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}
+                  </button>
+                ) : (
+                  <span className={isAvailable ? 'status-chip status-chip-available' : 'status-chip status-chip-unavailable'}>
+                    {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}
+                  </span>
+                )}
+              </div>
+            );
+          })}
       </div>
     </div>
   );

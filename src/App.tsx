@@ -223,6 +223,7 @@ function App() {
           playlists={band.playlists}
           availability={band.availability}
           members={band.members}
+          currentMemberId={account.memberId}
           canEditContent={editContent}
           canEditAvailability={(memberId) => canEditAvailability(account, memberId)}
           onToggle={handleToggle}

@@ -905,3 +905,25 @@ body {
 .member-card .delete-btn {
   margin-top: 4px;
 }
+
+.modal-row .toggle-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+.status-chip {
+  border-radius: 20px;
+  padding: 6px 12px;
+  font-weight: 700;
+  font-size: 0.8rem;
+}
+
+.status-chip-available {
+  background-color: rgba(29, 185, 84, 0.15);
+  color: var(--accent-green);
+}
+
+.status-chip-unavailable {
+  background-color: rgba(233, 20, 41, 0.15);
+  color: #ff8a8a;
+}
