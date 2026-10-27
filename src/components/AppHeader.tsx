@@ -1,3 +1,5 @@
+import { ThemeToggle } from './ThemeToggle';
+
 interface AppHeaderProps {
   bandName: string;
   googleLinked: boolean;
@@ -21,6 +23,7 @@ export function AppHeader({ bandName, googleLinked, onSignOut }: AppHeaderProps)
         🎸 Jam Planner
       </span>
       <span className="band-pill">{bandName}</span>
+      <ThemeToggle />
       <button type="button" className="text-btn" onClick={handleSignOut}>
         התנתק
       </button>

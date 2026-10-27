@@ -1,17 +1,74 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap');
-
+/* Semantic tokens. Dark is the default; the light values are below. An inline script in index.html sets data-theme before first paint. */
 :root {
   --bg-main: #121212;
   --bg-card: #181818;
   --bg-hover: #282828;
+  --bg-hover-strong: #333333;
   --text-main: #ffffff;
   --text-muted: #a7a7a7;
-  --accent-green: #1db954;
-  --accent-red: #e91429;
-  --accent-gold: #f5c518;
-  --accent-blue: #4f9dde;
-  --border-color: #333;
+  --border-color: #333333;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --overlay: rgba(0, 0, 0, 0.6);
+  --focus-ring: #4f9dde;
+
+  --accent-1: #1db954;
+  --accent-2: #e91429;
+  --accent-3: #f5c518;
+  --accent-4: #4f9dde;
+
+  --status-ok: var(--accent-1);
+  --status-missing: var(--accent-2);
+  --status-event: var(--accent-3);
+  --status-rehearsal: var(--accent-4);
+
+  /* Readable text colours for each status, and soft fills. */
+  --status-ok-text: #1db954;
+  --status-missing-text: #ff8a8a;
+  --status-event-text: #f5c518;
+  --status-rehearsal-text: #4f9dde;
+  --tint-ok: rgba(29, 185, 84, 0.15);
+  --tint-missing: rgba(233, 20, 41, 0.15);
+  --tint-missing-faint: rgba(233, 20, 41, 0.05);
+  --tint-missing-border: rgba(233, 20, 41, 0.4);
+  --tint-event: rgba(245, 197, 24, 0.1);
+  --tint-rehearsal: rgba(79, 157, 222, 0.1);
+
+  /* Old names, kept as aliases. */
+  --accent-green: var(--status-ok);
+  --accent-red: var(--status-missing);
+  --accent-gold: var(--status-event);
+  --accent-blue: var(--status-rehearsal);
   color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+  --bg-main: #f4f1ea;
+  --bg-card: #ffffff;
+  --bg-hover: #ece8df;
+  --bg-hover-strong: #ddd8cc;
+  --text-main: #1a1a1a;
+  --text-muted: #595959;
+  --border-color: #cfc9ba;
+  --shadow: 0 6px 18px rgba(40, 30, 10, 0.15);
+  --overlay: rgba(20, 15, 5, 0.45);
+  --focus-ring: #1c5fa0;
+
+  --accent-1: #17a34a;
+  --accent-2: #d3122a;
+  --accent-3: #d9a400;
+  --accent-4: #2f80d0;
+
+  --status-ok-text: #0b6b2f;
+  --status-missing-text: #b3001b;
+  --status-event-text: #7a5800;
+  --status-rehearsal-text: #1c5fa0;
+  --tint-ok: rgba(23, 163, 74, 0.15);
+  --tint-missing: rgba(211, 18, 42, 0.12);
+  --tint-missing-faint: rgba(211, 18, 42, 0.06);
+  --tint-missing-border: rgba(211, 18, 42, 0.4);
+  --tint-event: rgba(217, 164, 0, 0.18);
+  --tint-rehearsal: rgba(47, 128, 208, 0.12);
+  color-scheme: light;
 }
 
 * {
@@ -52,7 +109,7 @@ body {
   background-color: var(--bg-card);
   border-radius: 16px;
   padding: 40px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .app-header {
@@ -112,7 +169,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .legend-item {
@@ -132,19 +189,19 @@ body {
 }
 
 .dot-green {
-  background-color: var(--accent-green);
+  background-color: var(--status-ok);
 }
 
 .dot-red {
-  background-color: var(--accent-red);
+  background-color: var(--status-missing);
 }
 
 .dot-gold {
-  background-color: var(--accent-gold);
+  background-color: var(--status-event);
 }
 
 .dot-blue {
-  background-color: var(--accent-blue);
+  background-color: var(--status-rehearsal);
 }
 
 .month-nav {
@@ -167,7 +224,7 @@ body {
 }
 
 .month-nav button:hover {
-  background-color: #333;
+  background-color: var(--bg-hover-strong);
 }
 
 .month-section {
@@ -216,7 +273,7 @@ body {
 @media (hover: hover) {
   .day-cell:not(.empty):hover {
     transform: translateY(-2px);
-    background-color: #333;
+    background-color: var(--bg-hover-strong);
   }
 }
 
@@ -232,23 +289,23 @@ body {
 }
 
 .status-all-clear {
-  border-right-color: var(--accent-green);
+  border-right-color: var(--status-ok);
 }
 
 .status-all-clear .status-text {
-  color: var(--accent-green);
+  color: var(--status-ok-text);
   font-size: 0.85rem;
   font-weight: 700;
   margin-top: auto;
 }
 
 .status-missing {
-  border-right-color: var(--accent-red);
-  background-color: rgba(233, 20, 41, 0.05);
+  border-right-color: var(--status-missing);
+  background-color: var(--tint-missing-faint);
 }
 
 .status-missing .missing-names {
-  color: #ff8a8a;
+  color: var(--status-missing-text);
   font-size: 0.85rem;
   line-height: 1.4;
   font-weight: 500;
@@ -256,16 +313,16 @@ body {
 }
 
 .status-gig {
-  border: 2px solid var(--accent-gold);
-  background-color: rgba(245, 197, 24, 0.1);
+  border: 2px solid var(--status-event);
+  background-color: var(--tint-event);
 }
 
 .status-gig .date-number {
-  color: var(--accent-gold);
+  color: var(--status-event-text);
 }
 
 .status-gig .gig-label {
-  color: var(--accent-gold);
+  color: var(--status-event-text);
   font-weight: 800;
   font-size: 1.1rem;
   margin-top: auto;
@@ -277,16 +334,16 @@ body {
 }
 
 .status-rehearsal {
-  border: 2px solid var(--accent-blue);
-  background-color: rgba(79, 157, 222, 0.1);
+  border: 2px solid var(--status-rehearsal);
+  background-color: var(--tint-rehearsal);
 }
 
 .status-rehearsal .date-number {
-  color: var(--accent-blue);
+  color: var(--status-rehearsal-text);
 }
 
 .status-rehearsal .gig-label {
-  color: var(--accent-blue);
+  color: var(--status-rehearsal-text);
   font-weight: 800;
   font-size: 1.1rem;
   margin-top: auto;
@@ -300,7 +357,7 @@ body {
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -316,7 +373,7 @@ body {
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .modal-header {
@@ -358,7 +415,7 @@ body {
 
 .event-info-label {
   font-weight: 700;
-  color: var(--accent-blue);
+  color: var(--status-rehearsal-text);
 }
 
 .event-info-location {
@@ -370,8 +427,8 @@ body {
 .add-event-btn {
   width: 100%;
   background: var(--bg-hover);
-  color: var(--accent-blue);
-  border: 1px dashed var(--accent-blue);
+  color: var(--status-rehearsal-text);
+  border: 1px dashed var(--status-rehearsal);
   border-radius: 12px;
   padding: 10px;
   font-weight: 700;
@@ -412,8 +469,8 @@ body {
 }
 
 .text-btn.danger {
-  color: #ff8a8a;
-  border-color: rgba(233, 20, 41, 0.4);
+  color: var(--status-missing-text);
+  border-color: var(--tint-missing-border);
 }
 
 .event-delete-btn {
@@ -439,9 +496,9 @@ body {
   padding: 4px 4px 4px 16px;
   background: var(--bg-card);
   color: var(--text-main);
-  border: 1px solid var(--accent-red);
+  border: 1px solid var(--status-missing);
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .toast-close {
@@ -460,12 +517,12 @@ body {
 }
 
 :focus-visible {
-  outline: 2px solid var(--accent-blue);
+  outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
 }
 
 .signout-warning {
-  color: var(--accent-gold);
+  color: var(--status-event-text);
 }
 
 .event-form-actions {
@@ -496,13 +553,13 @@ body {
 }
 
 .toggle-available {
-  background-color: rgba(29, 185, 84, 0.15);
-  color: var(--accent-green);
+  background-color: var(--tint-ok);
+  color: var(--status-ok-text);
 }
 
 .toggle-unavailable {
-  background-color: rgba(233, 20, 41, 0.15);
-  color: #ff8a8a;
+  background-color: var(--tint-missing);
+  color: var(--status-missing-text);
 }
 
 @media (max-width: 600px) {
@@ -615,14 +672,14 @@ body {
 
 .nav-tab-active {
   color: var(--text-main);
-  border-bottom-color: var(--accent-green);
+  border-bottom-color: var(--status-ok);
 }
 
 .page-container {
   background-color: var(--bg-card);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow);
 }
 
 .page-title {
@@ -642,7 +699,7 @@ body {
 }
 
 .error-text {
-  color: #ff8a8a;
+  color: var(--status-missing-text);
   margin: 0;
   font-size: 0.85rem;
 }
@@ -651,7 +708,7 @@ body {
   min-height: 44px;
   background: none;
   border: none;
-  color: var(--accent-blue);
+  color: var(--status-rehearsal-text);
   font-family: inherit;
   font-weight: 700;
   font-size: 0.95rem;
@@ -785,15 +842,15 @@ body {
 }
 
 .icon-btn.danger {
-  color: #ff8a8a;
+  color: var(--status-missing-text);
 }
 
 .delete-btn {
   margin-top: 32px;
   min-height: 44px;
   width: 100%;
-  background: rgba(233, 20, 41, 0.15);
-  color: #ff8a8a;
+  background: var(--tint-missing);
+  color: var(--status-missing-text);
   border: none;
   border-radius: 12px;
   font-family: inherit;
@@ -847,7 +904,7 @@ body {
   }
 
   .nav-tab-active {
-    border-top-color: var(--accent-green);
+    border-top-color: var(--status-ok);
   }
 
   .nav-tab-icon {
@@ -991,11 +1048,24 @@ body {
 }
 
 .status-chip-available {
-  background-color: rgba(29, 185, 84, 0.15);
-  color: var(--accent-green);
+  background-color: var(--tint-ok);
+  color: var(--status-ok-text);
 }
 
 .status-chip-unavailable {
-  background-color: rgba(233, 20, 41, 0.15);
-  color: #ff8a8a;
+  background-color: var(--tint-missing);
+  color: var(--status-missing-text);
+}
+
+.theme-toggle {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--border-color);
+  background: var(--bg-hover);
+  color: var(--text-main);
+  font-size: 1.2rem;
+  font-family: inherit;
+  cursor: pointer;
 }

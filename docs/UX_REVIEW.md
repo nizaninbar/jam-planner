@@ -204,17 +204,17 @@ to tell apart. The dark theme uses a deep plum/ink background with neon accents.
 uses warm cream with saturated accents. Readability in day cells and the mobile skill's rules
 come first.
 
-- [ ] **STY-01: Semantic colour tokens.** Replace every hard-coded colour in `src/index.css` with
+- [x] **STY-01: Semantic colour tokens.** Replace every hard-coded colour in `src/index.css` with
   tokens (`--bg-*`, `--text-*`, `--border-color`, `--status-ok/missing/event`, `--accent-1…4`,
   `--shadow`, `--focus-ring`). Keep the old names as aliases while migrating.
-- [ ] **STY-02: Light and dark themes.** `:root` holds the dark values and
+- [x] **STY-02: Light and dark themes.** `:root` holds the dark values and
   `:root[data-theme="light"]` the light values. With no stored choice, follow
   `prefers-color-scheme`. Set `color-scheme` per theme.
-- [ ] **STY-03: Theme toggle.** Add a pure `src/utils/theme.ts` and a 44px `ThemeToggle`
+- [x] **STY-03: Theme toggle.** Add a pure `src/utils/theme.ts` and a 44px `ThemeToggle`
   (☀️/🌙, with `aria-label`) in `AppHeader`. It moves into the settings menu with UX-22. Save the
   choice in `localStorage` inside try/catch. An inline script in `index.html` sets `data-theme`
   before first paint and updates `<meta name="theme-color">`.
-- [ ] **STY-04: Contrast.** Text and status colours meet WCAG AA in both themes.
+- [x] **STY-04: Contrast.** Text and status colours meet WCAG AA in both themes.
 - [ ] **STY-05: Groovy palette.** Apply the direction above to both themes.
 - [ ] **STY-06: Typography.** Use Hebrew-capable Google Fonts: a chunky display face for
   headings and the brand (Secular One or Suez One) and Rubik for body text, replacing Heebo.
@@ -245,6 +245,7 @@ toast, optimistic availability), a new `Toast.tsx`, `index.css`, `index.html`. F
 `--bg-main` for now. Phase C makes the theme colour follow the active theme.
 
 ### Phase C: theme foundation and light/dark toggle (STY-01–04)
+Done 2026-10-27. Not yet checked in a browser or on a device (no Playwright run, no screenshots in either theme); contrast values were chosen by hand, not measured with a tool. Status colours have separate `--status-*-text` tokens so text stays AA in light mode. The `theme-color` meta follows the theme.
 Comes before the calendar work, so new UI is built on the tokens.
 Files: `index.css`, `utils/theme.ts`, a new `ThemeToggle.tsx`, `AppHeader.tsx`, `index.html`.
 
