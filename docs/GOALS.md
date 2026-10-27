@@ -29,7 +29,8 @@ self-signup are not goals right now.
 - Hosting or streaming audio - recordings are links only.
 
 ## Roadmap
-Nothing is currently committed; Playlists (v1) shipped.
+Nothing is currently committed; Playlists (v1) shipped. A UI/UX pass is queued in
+`docs/UX_REVIEW.md` (3 phases).
 
 Ideas, not scheduled and unprioritized: member add/rename UI, a middle availability state
 ("prefer not"), an upcoming-events list, rehearsal-time suggestions, rehearsal attendance
