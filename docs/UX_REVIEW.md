@@ -183,16 +183,16 @@ Ground rules for every item:
 Members may change only their own availability. All other data CRUD (events, reminders, songs,
 links, playlists) is admin-only. Viewers stay read-only. Admins can still do everything.
 
-- [ ] **PERM-01: RLS.** Add `supabase/migrate_08_admin_only_content.sql`. Drop the `"editors …"`
+- [x] **PERM-01: RLS.** Add `supabase/migrate_08_admin_only_content.sql`. Drop the `"editors …"`
   policies on `gigs`, `songs`, `song_links`, `playlists` and `playlist_songs` (from
   `migrate_06_add_iam.sql`) and recreate them as `my_role(band_id) = 'admin'`. The link and
   entry tables use the existing `exists (select … songs/playlists …)` pattern. The availability
   policies already match and stay as they are. `push_subscriptions` stays per-user. Use
   `drop policy if exists` so the migration can be re-run.
-- [ ] **PERM-02: UI gating.** `canEditContent` in `src/utils/permissions.ts` returns
+- [x] **PERM-02: UI gating.** `canEditContent` in `src/utils/permissions.ts` returns
   `role === 'admin'`. Check that the songs, playlists and reminder controls are all gated through
   it.
-- [ ] **PERM-03: Member view of the day editor.** Event info is read-only. Your own availability
+- [x] **PERM-03: Member view of the day editor.** Event info is read-only. Your own availability
   row comes first, with a large toggle, and the other members show as status chips. This pulls
   UX-12 forward.
 
@@ -231,6 +231,7 @@ come first.
 ## Implementation phases
 
 ### Phase A: permissions (PERM-01–03)
+Done 2026-10-27. Owner step: run `supabase/migrate_08_admin_only_content.sql` in the Supabase SQL editor, then test with admin/member/viewer accounts (a member's direct insert into `gigs`/`songs` must be rejected). Not yet tested against a live DB.
 Files: new `supabase/migrate_08_admin_only_content.sql`, `utils/permissions.ts`,
 `DayEditorModal.tsx`, the song and playlist views. Update CLAUDE.md's identity paragraph. Test
 with an admin, a member and a viewer account. As a member, a direct insert into `gigs` or `songs`
