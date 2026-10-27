@@ -57,7 +57,7 @@ Ground rules for every item:
 
 ### 🟠 High: calendar readability on phones
 
-- [ ] **UX-05: Text in mobile day cells is too small to read.**
+- [x] **UX-05: Text in mobile day cells is too small to read.**
   At 360px a cell is about 41px wide. `.missing-names`, `.status-text` and `.gig-label` are
   `0.6rem` (about 9.6px), and the day names are full words at `0.65rem`.
   **Fix:** at ≤600px a cell shows the date, the coloured state and one compact indicator: a
@@ -65,12 +65,12 @@ Ground rules for every item:
   short day names on mobile (א׳ ב׳ ג׳ ד׳ ה׳ ו׳ ש׳), rendered as a second span that CSS swaps in.
   Desktop keeps the current layout.
 
-- [ ] **UX-06: There's no "today" marker, and past days look the same as future days.**
+- [x] **UX-06: There's no "today" marker, and past days look the same as future days.**
   **Fix:** add pure `isToday(date)` and `isPast(date)` helpers to `src/utils/calendar.ts`.
   `DayCell` adds `is-today` (accent ring) and `is-past` (dimmed) classes. `getDayStatus` stays
   as it is.
 
-- [ ] **UX-07: Day cells are `<div onClick>`.**
+- [x] **UX-07: Day cells are `<div onClick>`.**
   They can't be reached with the keyboard, and screen readers don't announce them as controls.
   **Fix:** make them `<button type="button">` in `DayCell.tsx`, with an `aria-label` such as
   "24 באוקטובר, חסרים: דני" or "…, הופעה: <label>". Reset the button's default styles in CSS.
@@ -78,13 +78,13 @@ Ground rules for every item:
 - [x] **UX-08: The hover lift sticks after a tap on touch screens.**
   **Fix:** wrap `.day-cell:not(.empty):hover` in `@media (hover: hover)`.
 
-- [ ] **UX-09: The month header takes too much height and doesn't follow the usual pattern.**
+- [x] **UX-09: The month header takes too much height and doesn't follow the usual pattern.**
   The prev / today / next / ⓘ row sits above a separate bordered `h2` month title
   (`Calendar.tsx` + `MonthGrid.tsx`).
   **Fix:** one row with `‹prev  אוקטובר 2026  next›`, "היום" as a small chip, and ⓘ at the end.
   That saves about 70px on a phone. Confirm the arrows point the right way in RTL.
 
-- [ ] **UX-10: The icons don't match each other.**
+- [x] **UX-10: The icons don't match each other.**
   The legend shows only 🎤 for rehearsals, but band-only rehearsals use 🎶 (`DayCell`
   `EVENT_DISPLAY`). 🎸 currently means the brand, the Songs tab and a gig.
   **Fix:** the gig keeps 🎸, the Songs tab becomes 🎼 (`NavTabs.tsx`), and `Legend.tsx` lists
@@ -92,7 +92,7 @@ Ground rules for every item:
 
 ### 🟡 Medium: the day editor, the main place people edit
 
-- [ ] **UX-11: The modal isn't a proper dialog.**
+- [x] **UX-11: The modal isn't a proper dialog.**
   It has no `role="dialog"`, `aria-modal` or `aria-labelledby`. Focus isn't moved into it or
   returned when it closes, and the page behind it still scrolls. On mobile it's a centred card
   with `max-height: 80vh`, which is unreliable on iOS.
@@ -101,14 +101,14 @@ Ground rules for every item:
   rounded top, `max-height: 85dvh`, `env(safe-area-inset-bottom)` padding). Desktop stays
   centred.
 
-- [ ] **UX-12: Your own availability is hard to find.**
+- [x] **UX-12: Your own availability is hard to find.**
   Every member gets a row, and other people's rows show disabled buttons that look just like
   your enabled one.
   **Fix:** pass `account.memberId` in. Put the current user's row first, with a large toggle.
   Show the other members as read-only status chips, unless `canEditAvailability` is true for
   them (admin).
 
-- [ ] **UX-13: The event form relies on placeholders only.**
+- [x] **UX-13: The event form relies on placeholders only.**
   The labels disappear once you type, an empty title fails with no message, and "ביטול" reuses
   `.modal-close`.
   **Fix:** visible labels, the same pattern as `.form-stack label`. Show an inline error when the
@@ -250,6 +250,7 @@ Comes before the calendar work, so new UI is built on the tokens.
 Files: `index.css`, `utils/theme.ts`, a new `ThemeToggle.tsx`, `AppHeader.tsx`, `index.html`.
 
 ### Phase D: calendar and day editor (UX-05–07, 09–13)
+Done 2026-10-27. Not yet checked in a browser or on a device (no Playwright run, no 44px measurements, RTL arrow direction not eyeballed: the ‹ › glyphs rely on browser bidi mirroring). UX-12 was already mostly done in PERM-03; this added `data-autofocus` on the user's own toggle and a larger toggle for that row. The modal moves focus to that toggle on open.
 Files: `utils/calendar.ts` (`isToday`, `isPast`), `DayCell.tsx`, `MonthGrid.tsx`,
 `Calendar.tsx`, `Legend.tsx`, `NavTabs.tsx`, `DayEditorModal.tsx` (dialog semantics, bottom
 sheet, labelled form; current user first is mostly done in PERM-03), `index.css`.

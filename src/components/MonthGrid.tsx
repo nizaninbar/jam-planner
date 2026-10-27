@@ -2,10 +2,14 @@ import type { Band, Member } from '../types/band';
 import { getDayStatus } from '../utils/calendar';
 import { DayCell } from './DayCell';
 
-const DAY_NAMES = ['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'];
-const MONTH_NAMES = [
-  'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-  'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+const DAY_NAMES = [
+  { full: 'ראשון', short: 'א׳' },
+  { full: 'שני', short: 'ב׳' },
+  { full: 'שלישי', short: 'ג׳' },
+  { full: 'רביעי', short: 'ד׳' },
+  { full: 'חמישי', short: 'ה׳' },
+  { full: 'שישי', short: 'ו׳' },
+  { full: 'שבת', short: 'ש׳' },
 ];
 
 interface MonthGridProps {
@@ -23,13 +27,13 @@ export function MonthGrid({ year, month, band, members, onDayClick }: MonthGridP
 
   return (
     <div className="month-section">
-      <h2 className="month-title">
-        {MONTH_NAMES[month]} {year}
-      </h2>
       <div className="grid">
         {DAY_NAMES.map((name) => (
-          <div className="day-name" key={name}>
-            {name}
+          <div className="day-name" key={name.full}>
+            <span className="day-name-full">{name.full}</span>
+            <span className="day-name-short" aria-hidden="true">
+              {name.short}
+            </span>
           </div>
         ))}
         {Array.from({ length: leadingBlanks }, (_, i) => (

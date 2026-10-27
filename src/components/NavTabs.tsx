@@ -3,7 +3,7 @@ export type Section = 'calendar' | 'playlists' | 'songs' | 'admin';
 const TABS: { section: Section; icon: string; label: string }[] = [
   { section: 'calendar', icon: '🗓️', label: 'לוח שנה' },
   { section: 'playlists', icon: '🎵', label: 'פלייליסטים' },
-  { section: 'songs', icon: '🎸', label: 'שירים' },
+  { section: 'songs', icon: '🎼', label: 'שירים' },
   { section: 'admin', icon: '🔑', label: 'ניהול' },
 ];
 

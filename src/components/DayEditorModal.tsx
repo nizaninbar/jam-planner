@@ -1,12 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { Availability, AvailabilityStatus, Event, EventType, Member, Playlist } from '../types/band';
-import { getMemberStatus, toIsoDate } from '../utils/calendar';
+import { getMemberStatus, MONTH_NAMES, toIsoDate } from '../utils/calendar';
 import { getPlaylistForEvent } from '../utils/playlists';
-
-const MONTH_NAMES = [
-  'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
-  'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
-];
 
 const EVENT_TYPE_LABELS: Record<EventType, string> = {
   gig: 'הופעה',
@@ -68,6 +63,26 @@ export function DayEditorModal({
   const [type, setType] = useState<EventType>('rehearsal-band-only');
   const [label, setLabel] = useState('');
   const [location, setLocation] = useState('');
+  const [titleError, setTitleError] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+
+  // Move focus in on open, give it back to the opener on close, and stop the page behind from scrolling.
+  useEffect(() => {
+    const opener = document.activeElement as HTMLElement | null;
+    const panel = panelRef.current;
+    const first =
+      panel?.querySelector<HTMLElement>('[data-autofocus]') ??
+      panel?.querySelector<HTMLElement>('button:not(.modal-close):not(:disabled), input, select') ??
+      panel?.querySelector<HTMLElement>('.modal-close');
+    first?.focus();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      opener?.focus();
+    };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -88,8 +103,10 @@ export function DayEditorModal({
     }
   };
 
-  const handleAdd = () => {
+  const handleAdd = (e: FormEvent) => {
+    e.preventDefault();
     if (!label.trim()) {
+      setTitleError(true);
       return;
     }
     onCreateEvent(type, label.trim(), location.trim() || undefined);
@@ -100,9 +117,16 @@ export function DayEditorModal({
 
   return (
     <div className="modal-backdrop" onClick={onClose}>
-      <div className="modal-panel" onClick={(event) => event.stopPropagation()}>
+      <div
+        className="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        ref={panelRef}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="modal-header">
-          <h3>
+          <h3 id={titleId}>
             {date.getDate()} ב{MONTH_NAMES[date.getMonth()]} {date.getFullYear()}
           </h3>
           <button type="button" className="modal-close" onClick={onClose} aria-label="סגור">
@@ -188,28 +212,53 @@ export function DayEditorModal({
             )}
           </>
         ) : !canEditContent ? null : isAdding ? (
-          <div className="event-form">
-            <select value={type} onChange={(e) => setType(e.target.value as EventType)}>
-              <option value="rehearsal-band-only">חזרה של הלהקה</option>
-              <option value="rehearsal-guided">חזרה מודרכת</option>
-              <option value="gig">הופעה</option>
-            </select>
-            <input type="text" placeholder="כותרת" value={label} onChange={(e) => setLabel(e.target.value)} />
-            <input
-              type="text"
-              placeholder="מיקום (אופציונלי)"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-            />
+          <form className="event-form form-stack" onSubmit={handleAdd} noValidate>
+            <label>
+              סוג
+              <select value={type} onChange={(e) => setType(e.target.value as EventType)}>
+                <option value="rehearsal-band-only">חזרה של הלהקה</option>
+                <option value="rehearsal-guided">חזרה מודרכת</option>
+                <option value="gig">הופעה</option>
+              </select>
+            </label>
+            <label>
+              כותרת
+              <input
+                type="text"
+                value={label}
+                aria-invalid={titleError}
+                aria-describedby={titleError ? `${titleId}-error` : undefined}
+                onChange={(e) => {
+                  setLabel(e.target.value);
+                  setTitleError(false);
+                }}
+              />
+              {titleError && (
+                <span id={`${titleId}-error`} className="error-text" role="alert">
+                  צריך להזין כותרת
+                </span>
+              )}
+            </label>
+            <label>
+              מיקום (אופציונלי)
+              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} />
+            </label>
             <div className="event-form-actions">
-              <button type="button" className="toggle-btn toggle-available" onClick={handleAdd}>
+              <button type="submit" className="btn btn-primary">
                 הוסף
               </button>
-              <button type="button" className="text-btn" onClick={() => setIsAdding(false)}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => {
+                  setIsAdding(false);
+                  setTitleError(false);
+                }}
+              >
                 ביטול
               </button>
             </div>
-          </div>
+          </form>
         ) : (
           <button type="button" className="add-event-btn" onClick={() => setIsAdding(true)}>
             + הוסף אירוע
@@ -226,13 +275,14 @@ export function DayEditorModal({
             const editable = canEditAvailability(member.id);
             const isMe = member.id === currentMemberId;
             return (
-              <div className="modal-row" key={member.id}>
+              <div className={isMe ? 'modal-row modal-row-me' : 'modal-row'} key={member.id}>
                 <span>{isMe ? `${member.name} (את/ה)` : member.name}</span>
                 {editable ? (
                   <button
                     type="button"
                     className={isAvailable ? 'toggle-btn toggle-available' : 'toggle-btn toggle-unavailable'}
                     disabled={pendingMemberIds.has(member.id)}
+                    data-autofocus={isMe ? '' : undefined}
                     onClick={() => onToggle(member.id, isAvailable ? 'unavailable' : 'available')}
                   >
                     {isAvailable ? '✓ פנוי/ה' : '✗ לא זמין/ה'}

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Band } from '../types/band';
+import { MONTH_NAMES } from '../utils/calendar';
 import { Legend } from './Legend';
 import { MonthGrid } from './MonthGrid';
 
@@ -40,14 +41,31 @@ export function Calendar({ band, onDayClick }: CalendarProps) {
   return (
     <div className="calendar-container">
       <div className="month-nav">
-        <button type="button" onClick={() => setVisible((v) => shiftMonth(v.year, v.month, -1))}>
-          ‹ הקודם
+        <button
+          type="button"
+          className="month-arrow"
+          aria-label="החודש הקודם"
+          onClick={() => setVisible((v) => shiftMonth(v.year, v.month, -1))}
+        >
+          ‹
         </button>
-        <button type="button" onClick={() => setVisible({ year: today.getFullYear(), month: today.getMonth() })}>
+        <h2 className="month-title" aria-live="polite">
+          {MONTH_NAMES[visible.month]} {visible.year}
+        </h2>
+        <button
+          type="button"
+          className="month-arrow"
+          aria-label="החודש הבא"
+          onClick={() => setVisible((v) => shiftMonth(v.year, v.month, 1))}
+        >
+          ›
+        </button>
+        <button
+          type="button"
+          className="today-chip"
+          onClick={() => setVisible({ year: today.getFullYear(), month: today.getMonth() })}
+        >
           היום
-        </button>
-        <button type="button" onClick={() => setVisible((v) => shiftMonth(v.year, v.month, 1))}>
-          הבא ›
         </button>
         <div className="legend-wrap" ref={legendRef}>
           <button

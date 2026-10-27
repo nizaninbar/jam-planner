@@ -17,6 +17,19 @@ export function toIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export const MONTH_NAMES = [
+  'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
+  'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',
+];
+
+export function isToday(date: Date, now: Date = new Date()): boolean {
+  return toIsoDate(date) === toIsoDate(now);
+}
+
+export function isPast(date: Date, now: Date = new Date()): boolean {
+  return toIsoDate(date) < toIsoDate(now);
+}
+
 export function getDayStatus(
   band: Pick<Band, 'events' | 'availability'>,
   members: Member[],
