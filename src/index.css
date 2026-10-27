@@ -77,7 +77,8 @@
   --sunburst: rgba(240, 106, 18, 0.1);
 
   --status-missing: #d3122a;
-  --status-ok-text: #0a6b61;
+  --status-event: #ad7f00;
+  --status-ok-text: #085a52;
   --status-missing-text: #b3001b;
   --status-event-text: #7a5800;
   --status-rehearsal-text: #5a30c0;
@@ -172,7 +173,7 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: rgba(0, 0, 0, 0.28);
+  background: rgba(0, 0, 0, 0.38);
   color: #fff;
   border-radius: 20px;
   padding: 8px 16px;
