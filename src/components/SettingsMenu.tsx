@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { disablePush, enablePush, getPushStatus, type PushStatus } from '../data/pushService';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { Icon } from './Icon';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -14,6 +15,7 @@ interface SettingsMenuProps {
 // Google isn't attached or reminders are still off on this device.
 export function SettingsMenu({ bandId, googleLinked, onAttachGoogle, onSignOut }: SettingsMenuProps) {
   const [open, setOpen] = useState(false);
+  const [installStatus, install] = useInstallPrompt();
   const [push, setPush] = useState<PushStatus | null>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -112,6 +114,24 @@ export function SettingsMenu({ bandId, googleLinked, onAttachGoogle, onSignOut }
           {push === 'denied' && (
             <div className="settings-row">
               <span>ההתראות חסומות בדפדפן. אפשר לאפשר אותן בהגדרות האתר.</span>
+            </div>
+          )}
+          {installStatus === 'available' && (
+            <div className="settings-row">
+              <span>התקן את האפליקציה על המסך הראשי.</span>
+              <button type="button" className="toggle-btn toggle-available" onClick={() => void install()}>
+                התקן
+              </button>
+            </div>
+          )}
+          {installStatus === 'ios' && (
+            <div className="settings-row">
+              <span>להתקנה: לחץ על שיתוף ואז "הוסף למסך הבית".</span>
+            </div>
+          )}
+          {installStatus === 'unavailable' && (
+            <div className="settings-row">
+              <span>להתקנה: בתפריט הדפדפן (⋮) בחר "התקן אפליקציה" או "הוסף למסך הבית".</span>
             </div>
           )}
           <div className="settings-row">

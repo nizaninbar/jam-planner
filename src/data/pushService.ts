@@ -57,12 +57,18 @@ export async function enablePush(bandId: string): Promise<void> {
 
   const registration = await navigator.serviceWorker.register(serviceWorkerUrl());
   await navigator.serviceWorker.ready;
-  const subscription =
-    (await registration.pushManager.getSubscription()) ??
-    (await registration.pushManager.subscribe({
+  // Always start fresh: a leftover subscription from before a reinstall / re-invite may be stale, or its
+  // endpoint may be stored under a different user, which would make the upsert below fail.
+  await (await registration.pushManager.getSubscription())?.unsubscribe();
+  let subscription: PushSubscription;
+  try {
+    subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
-    }));
+    });
+  } catch (err) {
+    throw new Error(`Failed to subscribe this device: ${(err as Error).message}`);
+  }
 
   const json = subscription.toJSON();
   const { data: userData, error: userError } = await supabase.auth.getUser();

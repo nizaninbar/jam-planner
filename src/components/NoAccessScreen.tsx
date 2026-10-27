@@ -16,6 +16,10 @@ export function NoAccessScreen({ message, signedIn, onGoogleSignIn, onSignOut }:
         <p className="muted">
           כדי להיכנס צריך קישור הזמנה אישי ממנהל הלהקה. אם כבר צירפת חשבון Google, אפשר להיכנס איתו.
         </p>
+        <p className="muted">
+          לא צירפת Google לפני שהתנתקת או הסרת את האפליקציה? בקש מהמנהל קישור הזמנה חדש, ואז צרף Google
+          בהגדרות.
+        </p>
         {message && <p className="error-text">{message}</p>}
         <button type="button" className="toggle-btn toggle-available" onClick={onGoogleSignIn}>
           כניסה עם Google
