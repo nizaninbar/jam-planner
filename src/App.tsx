@@ -2,8 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
-import { GoogleBanner } from './components/GoogleBanner';
-import { NotificationsBanner } from './components/NotificationsBanner';
+import { CalendarSkeleton } from './components/CalendarSkeleton';
 import { MembersAdminView } from './components/MembersAdminView';
 import { NavTabs, type Section } from './components/NavTabs';
 import { NoAccessScreen } from './components/NoAccessScreen';
@@ -118,7 +117,7 @@ function App() {
   }
 
   if (auth.status === 'loading') {
-    return <div className="loading">טוען...</div>;
+    return <CalendarSkeleton />;
   }
 
   if (auth.status === 'none') {
@@ -133,7 +132,7 @@ function App() {
   }
 
   if (!band) {
-    return <div className="loading">טוען...</div>;
+    return <CalendarSkeleton />;
   }
 
   const { account } = auth;
@@ -177,9 +176,17 @@ function App() {
       .catch((err: Error) => setToast(err.message));
   };
 
-  const apply = (next: Promise<Band>) => {
-    next.then(setBand).catch((err: Error) => setToast(err.message));
-  };
+  // Resolves true once saved, false after a failure (already shown in the toast).
+  const apply = (next: Promise<Band>): Promise<boolean> =>
+    next
+      .then((result) => {
+        setBand(result);
+        return true;
+      })
+      .catch((err: Error) => {
+        setToast(err.message);
+        return false;
+      });
 
   const openPlaylist = (playlistId: string) => {
     setSelectedDate(null);
@@ -199,9 +206,13 @@ function App() {
 
   return (
     <div className="app-shell">
-      <AppHeader bandName={band.name} googleLinked={auth.googleLinked} onSignOut={handleSignOut} />
-      {!auth.googleLinked && <GoogleBanner onAttach={() => handleGoogle(attachGoogle)} />}
-      <NotificationsBanner bandId={band.id} />
+      <AppHeader
+        bandId={band.id}
+        bandName={band.name}
+        googleLinked={auth.googleLinked}
+        onAttachGoogle={() => handleGoogle(attachGoogle)}
+        onSignOut={handleSignOut}
+      />
       <NavTabs
         active={view.section}
         showAdmin={canManageAccess(account)}

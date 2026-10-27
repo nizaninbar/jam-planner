@@ -17,6 +17,11 @@ export function toIsoDate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+// e.g. "יום ו׳, 24.10"
+export function formatEventDate(iso: string): string {
+  return parseIsoDate(iso).toLocaleDateString('he-IL', { weekday: 'short', day: 'numeric', month: 'numeric' });
+}
+
 export const MONTH_NAMES = [
   'ינואר', 'פברואר', 'מרץ', 'אפריל', 'מאי', 'יוני',
   'יולי', 'אוגוסט', 'ספטמבר', 'אוקטובר', 'נובמבר', 'דצמבר',

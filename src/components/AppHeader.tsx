@@ -1,8 +1,10 @@
-import { ThemeToggle } from './ThemeToggle';
+import { SettingsMenu } from './SettingsMenu';
 
 interface AppHeaderProps {
+  bandId: string;
   bandName: string;
   googleLinked: boolean;
+  onAttachGoogle: () => void;
   onSignOut: () => void;
 }
 
@@ -10,7 +12,7 @@ const SIGN_OUT_CONFIRM = 'להתנתק?';
 const SIGN_OUT_CONFIRM_NO_GOOGLE =
   'חשבון Google לא מחובר, ולכן אחרי ההתנתקות תצטרכו קישור הזמנה חדש כדי להיכנס שוב. מומלץ לחבר את Google קודם.\n\nלהתנתק בכל זאת?';
 
-export function AppHeader({ bandName, googleLinked, onSignOut }: AppHeaderProps) {
+export function AppHeader({ bandId, bandName, googleLinked, onAttachGoogle, onSignOut }: AppHeaderProps) {
   const handleSignOut = () => {
     if (window.confirm(googleLinked ? SIGN_OUT_CONFIRM : SIGN_OUT_CONFIRM_NO_GOOGLE)) {
       onSignOut();
@@ -23,10 +25,12 @@ export function AppHeader({ bandName, googleLinked, onSignOut }: AppHeaderProps)
         🎸 Jam Planner
       </span>
       <span className="band-pill">{bandName}</span>
-      <ThemeToggle />
-      <button type="button" className="text-btn" onClick={handleSignOut}>
-        התנתק
-      </button>
+      <SettingsMenu
+        bandId={bandId}
+        googleLinked={googleLinked}
+        onAttachGoogle={onAttachGoogle}
+        onSignOut={handleSignOut}
+      />
     </header>
   );
 }

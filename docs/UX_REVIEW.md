@@ -123,44 +123,44 @@ Ground rules for every item:
 
 ### 🟡 Medium: playlists, songs, admin
 
-- [ ] **UX-16: Song detail always opens as an edit form.**
+- [x] **UX-16: Song detail always opens as an edit form.**
   At rehearsal people read lyrics and chords, and textareas are a poor reader on a phone: they
   scroll inside the page scroll, and the text is small.
   **Fix:** in `SongDetail.tsx`, a read view by default (large `pre-wrap` lyrics, LTR monospace
   chords, structure as text), with a "✏️ ערוך" toggle shown when `canEdit` is true.
 
-- [ ] **UX-17: Blur-to-save gives no feedback.**
+- [x] **UX-17: Blur-to-save gives no feedback.**
   The song and playlist fields save silently.
   **Fix:** show a small "שומר…" / "נשמר ✓" status near the field, driven by the promise passed
   to `apply`.
 
-- [ ] **UX-18: Dates appear as raw ISO strings.**
+- [x] **UX-18: Dates appear as raw ISO strings.**
   `PlaylistDetail.tsx` shows `2026-10-24` in the event rows and in the link-to-event select.
   **Fix:** add a shared `formatEventDate` helper in `src/utils/calendar.ts` using `he-IL`
   (e.g. "יום ו׳, 24.10").
 
-- [ ] **UX-19: The playlist reorder rows are cramped.**
+- [x] **UX-19: The playlist reorder rows are cramped.**
   ▲ ▼ ✕ take 3×44px plus gaps, which leaves about 150px for the song title at 360px.
   **Fix:** the default rows show only the title. A "ערוך סדר" toggle shows the reorder and
   remove controls.
 
-- [ ] **UX-20: Sharing an invite link takes too many steps.**
+- [x] **UX-20: Sharing an invite link takes too many steps.**
   "העתק קישור" makes the admin switch to WhatsApp and paste.
   **Fix:** in `MembersAdminView.tsx`, use `navigator.share({ url })` when it's available and
   fall back to copying.
 
-- [ ] **UX-21: The admin viewer rows are cramped.**
+- [x] **UX-21: The admin viewer rows are cramped.**
   Text, a select and ✕ all share one `.order-row`.
   **Fix:** reuse the `.member-card` layout for viewers.
 
 ### 🟢 Low: polish
 
-- [ ] **UX-22: Banners stack above the calendar.**
+- [x] **UX-22: Banners stack above the calendar.**
   `GoogleBanner` and `NotificationsBanner` can take about 120px on a phone, on every visit.
   **Fix:** move both into a small account/settings menu in `AppHeader`, with a dot badge until
   each one is done.
 
-- [ ] **UX-23: The icons are inconsistent emoji.**
+- [x] **UX-23: The icons are inconsistent emoji.**
   Emoji render differently on each OS, and ⎋ and ⓘ are obscure. For now, keep one consistent set.
   Longer term, replace them with an inline SVG icon set.
 
@@ -170,7 +170,7 @@ Ground rules for every item:
 - [x] **UX-25: The PWA theme colour doesn't match the background.**
   `index.html` `theme-color` is `#0f1117`, but `--bg-main` is `#121212`. **Fix:** use `#121212`.
 
-- [ ] **UX-26: The loading state is plain "טוען…" text.**
+- [x] **UX-26: The loading state is plain "טוען…" text.**
   **Fix:** show a skeleton month grid instead.
 
 - [ ] **UX-27 (optional, ask before building): there's no "what's next" view.**
@@ -256,6 +256,7 @@ Files: `utils/calendar.ts` (`isToday`, `isPast`), `DayCell.tsx`, `MonthGrid.tsx`
 sheet, labelled form; current user first is mostly done in PERM-03), `index.css`.
 
 ### Phase E: content views and polish (UX-16–23, 26)
+Done 2026-10-27. Build and lint pass; NOT yet checked in a browser (no Playwright run, so no screenshots, tap-target measurements or share-sheet test on a real phone). UX-23 is partial: the new `Icon` set (close, up/down, edit, check, share, info, sun/moon, bell, settings, logout) replaces the obscure glyphs, but the calendar event emoji and nav-tab emoji stay for now; Phase F's logo defines the line style for the rest. UX-22: the banners are now rows inside `SettingsMenu` (the dot shows while Google is unattached or reminders are off); sign-out and the theme toggle moved there too. Song/playlist saves show "שומר…/נשמר ✓/השמירה נכשלה" via `useSaveStatus`; `apply` now resolves to a boolean. Deferred: UX-19's reorder mode and the song edit toggle reset on navigation (no persistence). No manual steps.
 Files: `SongDetail.tsx` (read/edit mode), `PlaylistDetail.tsx` (dates, reorder mode, saved
 status), `MembersAdminView.tsx` (share, viewer cards), `AppHeader.tsx` with the banners and the
 theme toggle moved into a menu, and the loading skeleton. Draw the UX-23 SVG icons in the

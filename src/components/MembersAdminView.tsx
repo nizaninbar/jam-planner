@@ -11,9 +11,12 @@ import {
   type PendingInvite,
 } from '../data/authService';
 import type { Band, Role } from '../types/band';
+import { Icon } from './Icon';
 
 const ROLE_LABELS: Record<Role, string> = { admin: 'מנהל', member: 'חבר', viewer: 'צופה' };
 const ROLES: Role[] = ['admin', 'member', 'viewer'];
+
+const canShare = typeof navigator.share === 'function';
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString('he-IL');
@@ -60,7 +63,18 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
     });
   };
 
-  const copy = async (url: string) => {
+  // Opens the system share sheet (WhatsApp etc.) when there is one, otherwise copies.
+  const share = async ({ label, url }: { label: string; url: string }) => {
+    if (canShare) {
+      try {
+        await navigator.share({ title: 'Jam Planner', text: `קישור הזמנה עבור ${label}`, url });
+        return;
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') {
+          return;
+        }
+      }
+    }
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
@@ -82,8 +96,16 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
           <strong>קישור הזמנה עבור {newLink.label}</strong>
           <p className="muted">תקף ל-7 ימים, לשימוש חד-פעמי. הוא לא יוצג שוב.</p>
           <input type="text" dir="ltr" readOnly value={newLink.url} onFocus={(e) => e.target.select()} />
-          <button type="button" className="toggle-btn toggle-available" onClick={() => void copy(newLink.url)}>
-            {copied ? '✓ הועתק' : 'העתק קישור'}
+          <button type="button" className="toggle-btn toggle-available" onClick={() => void share(newLink)}>
+            {copied ? (
+              <>
+                <Icon name="check" size={16} /> הועתק
+              </>
+            ) : (
+              <>
+                <Icon name="share" size={16} /> {canShare ? 'שתף קישור' : 'העתק קישור'}
+              </>
+            )}
           </button>
         </div>
       )}
@@ -134,7 +156,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
                     onClick={() => run(() => revokeAccess(band.id, { userId: device.userId }))}
                     aria-label="נתק מכשיר"
                   >
-                    ✕
+                    <Icon name="close" />
                   </button>
                 </div>
               ))}
@@ -147,7 +169,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
                     onClick={() => run(() => revokeInvite(p.id))}
                     aria-label="בטל הזמנה"
                   >
-                    ✕
+                    <Icon name="close" />
                   </button>
                 </div>
               ))}
@@ -174,42 +196,50 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
       )}
       <ul className="item-list">
         {viewerAccounts.map((account, index) => (
-          <li key={account.userId} className="order-row">
-            <span className="list-item-meta">
-              {memberName(account.memberId)} {index + 1} · {account.googleLinked ? 'Google' : 'אנונימי'} ·{' '}
-              {formatDate(account.createdAt)}
-            </span>
-            <select
-              value={account.role}
-              onChange={(e) => run(() => setAccountRole(band.id, account.userId, e.target.value as Role))}
-              aria-label="תפקיד"
-            >
-              {ROLES.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABELS[r]}
-                </option>
-              ))}
-            </select>
-            <button
-              type="button"
-              className="icon-btn danger"
-              onClick={() => run(() => revokeAccess(band.id, { userId: account.userId }))}
-              aria-label="שלול גישה"
-            >
-              ✕
-            </button>
+          <li key={account.userId} className="member-card">
+            <div className="member-card-head">
+              <span className="list-item-title">
+                {memberName(account.memberId)} {index + 1}
+              </span>
+              <span className="list-item-meta">
+                {account.googleLinked ? 'Google' : 'אנונימי'} · {formatDate(account.createdAt)}
+              </span>
+            </div>
+            <div className="inline-form">
+              <select
+                value={account.role}
+                onChange={(e) => run(() => setAccountRole(band.id, account.userId, e.target.value as Role))}
+                aria-label="תפקיד"
+              >
+                {ROLES.map((r) => (
+                  <option key={r} value={r}>
+                    {ROLE_LABELS[r]}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                className="icon-btn danger"
+                onClick={() => run(() => revokeAccess(band.id, { userId: account.userId }))}
+                aria-label="שלול גישה"
+              >
+                <Icon name="close" />
+              </button>
+            </div>
           </li>
         ))}
         {invites
           .filter((i) => !i.memberId)
           .map((p) => (
-            <li key={p.id} className="order-row">
-              <span className="list-item-meta">
-                הזמנה ממתינה ({ROLE_LABELS[p.role]}) · עד {formatDate(p.expiresAt)}
-              </span>
-              <button type="button" className="icon-btn danger" onClick={() => run(() => revokeInvite(p.id))} aria-label="בטל הזמנה">
-                ✕
-              </button>
+            <li key={p.id} className="member-card">
+              <div className="order-row">
+                <span className="list-item-meta">
+                  הזמנה ממתינה ({ROLE_LABELS[p.role]}) · עד {formatDate(p.expiresAt)}
+                </span>
+                <button type="button" className="icon-btn danger" onClick={() => run(() => revokeInvite(p.id))} aria-label="בטל הזמנה">
+                  <Icon name="close" />
+                </button>
+              </div>
             </li>
           ))}
       </ul>

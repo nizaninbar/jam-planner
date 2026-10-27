@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { addSongLink, deleteSong, deleteSongLink, updateSong } from '../data/bandService';
+import { useSaveStatus } from '../hooks/useSaveStatus';
 import type { Band } from '../types/band';
 import { getPlaylistsContainingSong, isHttpUrl } from '../utils/playlists';
+import { Icon } from './Icon';
+import { SaveIndicator } from './SaveIndicator';
 
 interface SongDetailProps {
   band: Band;
   songId: string;
-  apply: (next: Promise<Band>) => void;
+  apply: (next: Promise<Band>) => Promise<boolean>;
   canEdit: boolean;
   onOpenPlaylist: (playlistId: string) => void;
   onBack: () => void;
@@ -17,6 +20,8 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
   const [linkDescription, setLinkDescription] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkError, setLinkError] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
+  const [saveStatus, track] = useSaveStatus();
 
   if (!song) {
     return (
@@ -32,13 +37,15 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
   const playlists = getPlaylistsContainingSong(song.id, band.playlists);
 
   const save = (fields: { name?: string; lyrics?: string; chords?: string; structure?: string }) => {
-    apply(
-      updateSong(band.id, song.id, {
-        name: fields.name ?? song.name,
-        lyrics: fields.lyrics ?? song.lyrics,
-        chords: fields.chords ?? song.chords,
-        structure: fields.structure ?? song.structure,
-      }),
+    track(
+      apply(
+        updateSong(band.id, song.id, {
+          name: fields.name ?? song.name,
+          lyrics: fields.lyrics ?? song.lyrics,
+          chords: fields.chords ?? song.chords,
+          structure: fields.structure ?? song.structure,
+        }),
+      ),
     );
   };
 
@@ -91,22 +98,46 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
         → חזרה
       </button>
 
-      <fieldset className="plain-fieldset" disabled={!canEdit}>
-        <div className="form-stack">
-          <label>
-            שם
-            <input
-              key={`n-${song.name}`}
-              type="text"
-              defaultValue={song.name}
-              onBlur={(e) => e.target.value.trim() && e.target.value !== song.name && save({ name: e.target.value.trim() })}
-            />
-          </label>
-          {textField('מבנה', 'structure', 2)}
-          {textField('אקורדים', 'chords', 5, true)}
-          {textField('מילים', 'lyrics', 8)}
-        </div>
-      </fieldset>
+      {editing && canEdit ? (
+        <>
+          <div className="form-stack">
+            <label>
+              שם
+              <input
+                key={`n-${song.name}`}
+                type="text"
+                defaultValue={song.name}
+                onBlur={(e) => e.target.value.trim() && e.target.value !== song.name && save({ name: e.target.value.trim() })}
+              />
+            </label>
+            {textField('מבנה', 'structure', 2)}
+            {textField('אקורדים', 'chords', 5, true)}
+            {textField('מילים', 'lyrics', 8)}
+          </div>
+          <SaveIndicator status={saveStatus} />
+        </>
+      ) : (
+        <article className="song-reader">
+          <h2 className="song-reader-title">{song.name}</h2>
+          {song.structure && <p className="song-reader-structure">{song.structure}</p>}
+          {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
+          {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
+          {!song.structure && !song.chords && !song.lyrics && <p className="muted">אין עדיין מילים או אקורדים.</p>}
+        </article>
+      )}
+      {canEdit && (
+        <button type="button" className="btn btn-secondary edit-toggle" onClick={() => setEditing((e) => !e)}>
+          {editing ? (
+            <>
+              <Icon name="check" size={16} /> סיום עריכה
+            </>
+          ) : (
+            <>
+              <Icon name="edit" size={16} /> ערוך
+            </>
+          )}
+        </button>
+      )}
 
       <h3 className="section-title">קישורים</h3>
       {song.links.length === 0 && <p className="muted">אין קישורים.</p>}
@@ -124,7 +155,7 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
                 onClick={() => apply(deleteSongLink(band.id, link.id))}
                 aria-label="מחק קישור"
               >
-                ✕
+                <Icon name="close" />
               </button>
             )}
           </li>

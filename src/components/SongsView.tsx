@@ -5,7 +5,7 @@ import { getPlaylistsContainingSong } from '../utils/playlists';
 
 interface SongsViewProps {
   band: Band;
-  apply: (next: Promise<Band>) => void;
+  apply: (next: Promise<Band>) => Promise<boolean>;
   canEdit: boolean;
   onOpenSong: (songId: string) => void;
 }

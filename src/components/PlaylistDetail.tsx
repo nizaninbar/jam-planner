@@ -8,14 +8,18 @@ import {
   setEventPlaylist,
   updatePlaylist,
 } from '../data/bandService';
+import { useSaveStatus } from '../hooks/useSaveStatus';
 import type { Band } from '../types/band';
+import { formatEventDate } from '../utils/calendar';
 import { newId } from '../utils/id';
 import { getEventsForPlaylist, getPlaylistSongs, sortedEntries } from '../utils/playlists';
+import { Icon } from './Icon';
+import { SaveIndicator } from './SaveIndicator';
 
 interface PlaylistDetailProps {
   band: Band;
   playlistId: string;
-  apply: (next: Promise<Band>) => void;
+  apply: (next: Promise<Band>) => Promise<boolean>;
   canEdit: boolean;
   onOpenSong: (songId: string) => void;
   onBack: () => void;
@@ -25,6 +29,8 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
   const playlist = band.playlists.find((p) => p.id === playlistId);
   const [addSongId, setAddSongId] = useState('');
   const [newSongName, setNewSongName] = useState('');
+  const [reordering, setReordering] = useState(false);
+  const [saveStatus, track] = useSaveStatus();
 
   if (!playlist) {
     return (
@@ -47,11 +53,13 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
     .sort((a, b) => a.date.localeCompare(b.date));
 
   const save = (fields: { name?: string; description?: string }) => {
-    apply(
-      updatePlaylist(band.id, playlist.id, {
-        name: fields.name ?? playlist.name,
-        description: fields.description ?? playlist.description,
-      }),
+    track(
+      apply(
+        updatePlaylist(band.id, playlist.id, {
+          name: fields.name ?? playlist.name,
+          description: fields.description ?? playlist.description,
+        }),
+      ),
     );
   };
 
@@ -123,6 +131,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
           </label>
         </div>
       </fieldset>
+      <SaveIndicator status={saveStatus} />
 
       <h3 className="section-title">אירועים ({linkedEvents.length})</h3>
       {linkedEvents.length === 0 && <p className="muted">הפלייליסט לא מקושר לאף אירוע.</p>}
@@ -131,7 +140,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
           <li key={event.id} className="order-row">
             <span className="list-item">
               <span className="list-item-title">{event.label}</span>
-              <span className="list-item-meta">{event.date}</span>
+              <span className="list-item-meta">{formatEventDate(event.date)}</span>
             </span>
             {canEdit && (
               <button
@@ -140,7 +149,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
                 onClick={() => apply(setEventPlaylist(band.id, event.id, null))}
                 aria-label="נתק מהאירוע"
               >
-                ✕
+                <Icon name="close" />
               </button>
             )}
           </li>
@@ -157,7 +166,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
               const other = band.playlists.find((p) => p.id === event.playlistId);
               return (
                 <option key={event.id} value={event.id}>
-                  {event.date} · {event.label}
+                  {formatEventDate(event.date)} · {event.label}
                   {other ? ` (מוחלף מ"${other.name}")` : ''}
                 </option>
               );
@@ -166,7 +175,14 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
         </div>
       )}
 
-      <h3 className="section-title">שירים ({songs.length})</h3>
+      <div className="section-head">
+        <h3 className="section-title">שירים ({songs.length})</h3>
+        {canEdit && songs.length > 1 && (
+          <button type="button" className="btn btn-secondary" aria-pressed={reordering} onClick={() => setReordering((r) => !r)}>
+            {reordering ? 'סיום' : 'ערוך סדר'}
+          </button>
+        )}
+      </div>
       {songs.length === 0 && <p className="muted">הפלייליסט ריק.</p>}
       <ol className="item-list song-order">
         {songs.map((song, index) => (
@@ -176,10 +192,10 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
                 {index + 1}. {song.name}
               </span>
             </button>
-            {canEdit && (
+            {canEdit && reordering && (
               <>
                 <button type="button" className="icon-btn" onClick={() => move(index, -1)} disabled={index === 0} aria-label="הזז למעלה">
-                  ▲
+                  <Icon name="up" />
                 </button>
                 <button
                   type="button"
@@ -188,7 +204,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
                   disabled={index === songs.length - 1}
                   aria-label="הזז למטה"
                 >
-                  ▼
+                  <Icon name="down" />
                 </button>
                 <button
                   type="button"
@@ -196,7 +212,7 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
                   onClick={() => apply(removeSongFromPlaylist(band.id, playlist.id, song.id))}
                   aria-label="הסר מהפלייליסט"
                 >
-                  ✕
+                  <Icon name="close" />
                 </button>
               </>
             )}

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Band } from '../types/band';
 import { MONTH_NAMES } from '../utils/calendar';
+import { Icon } from './Icon';
 import { Legend } from './Legend';
 import { MonthGrid } from './MonthGrid';
 
@@ -84,7 +85,7 @@ export function Calendar({ band, onDayClick }: CalendarProps) {
             aria-expanded={legendOpen}
             onClick={() => setLegendOpen((o) => !o)}
           >
-            ⓘ
+            <Icon name="info" />
           </button>
           {legendOpen && <Legend />}
         </div>

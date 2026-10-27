@@ -5,7 +5,7 @@ import { getEventsForPlaylist } from '../utils/playlists';
 
 interface PlaylistsViewProps {
   band: Band;
-  apply: (next: Promise<Band>) => void;
+  apply: (next: Promise<Band>) => Promise<boolean>;
   canEdit: boolean;
   onOpenPlaylist: (playlistId: string) => void;
 }

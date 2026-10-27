@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Icon } from './Icon';
 import { applyTheme, followSystemTheme, getInitialTheme, type Theme } from '../utils/theme';
 
 export function ThemeToggle() {
@@ -25,7 +26,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={theme === 'dark' ? 'מעבר למצב בהיר' : 'מעבר למצב כהה'}
     >
-      <span aria-hidden="true">{theme === 'dark' ? '☀️' : '🌙'}</span>
+      <Icon name={theme === 'dark' ? 'sun' : 'moon'} />
     </button>
   );
 }

@@ -1168,3 +1168,186 @@ body {
   padding: 0 24px;
   font-size: 1rem;
 }
+
+/* Phase E: settings menu, song reader, save status, skeleton */
+.settings-wrap {
+  position: relative;
+  flex: none;
+}
+
+.settings-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.dot-badge {
+  position: absolute;
+  top: 6px;
+  inset-inline-end: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--status-missing);
+  border: 2px solid var(--bg-main);
+}
+
+.settings-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  inset-inline-end: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 300px;
+  max-width: calc(100vw - 32px);
+  padding: 8px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 8px;
+  font-size: 0.9rem;
+}
+
+.settings-row > span {
+  flex: 1 1 140px;
+}
+
+.settings-row .toggle-btn {
+  min-height: 44px;
+}
+
+.settings-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 8px;
+  background: none;
+  border: none;
+  border-radius: 8px;
+  color: var(--status-missing-text);
+  font-family: inherit;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.toggle-btn svg,
+.btn svg {
+  vertical-align: -3px;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.order-row > .list-item-meta {
+  flex: 1;
+  align-self: center;
+}
+
+.section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.section-head .btn {
+  min-height: 44px;
+}
+
+.edit-toggle {
+  margin-top: 16px;
+}
+
+.save-indicator {
+  min-height: 1.2em;
+  margin: 4px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+}
+
+.save-saved {
+  color: var(--status-ok-text);
+}
+
+.save-error {
+  color: var(--status-missing-text);
+}
+
+.song-reader {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.song-reader-title {
+  margin: 0;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.song-reader-structure {
+  margin: 0;
+  color: var(--text-muted);
+  white-space: pre-wrap;
+}
+
+.song-reader-chords {
+  margin: 0;
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  direction: ltr;
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.song-reader-lyrics {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.8;
+  white-space: pre-wrap;
+}
+
+.skeleton {
+  pointer-events: none;
+}
+
+.skeleton-bar {
+  background: var(--bg-hover);
+  border-radius: 8px;
+}
+
+.skeleton-nav {
+  height: 44px;
+  margin-bottom: 16px;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton-bar {
+    animation: skeleton-pulse 1.4s ease-in-out infinite;
+  }
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
