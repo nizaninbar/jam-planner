@@ -1,8 +1,8 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { addSongLink, deleteSong, deleteSongLink, updateSong } from '../data/bandService';
 import { useSaveStatus } from '../hooks/useSaveStatus';
-import type { Band } from '../types/band';
-import { getPlaylistsContainingSong, isHttpUrl } from '../utils/playlists';
+import type { Band, Playlist } from '../types/band';
+import { getAdjacentSongs, getPlaylistsContainingSong, isHttpUrl } from '../utils/playlists';
 import { Icon } from './Icon';
 import { SaveIndicator } from './SaveIndicator';
 
@@ -11,17 +11,23 @@ interface SongDetailProps {
   songId: string;
   apply: (next: Promise<Band>) => Promise<boolean>;
   canEdit: boolean;
+  playlist?: Playlist;
+  onSelectSong?: (songId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onBack: () => void;
 }
 
-export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBack }: SongDetailProps) {
+export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSong, onOpenPlaylist, onBack }: SongDetailProps) {
   const song = band.songs.find((s) => s.id === songId);
   const [linkDescription, setLinkDescription] = useState('');
   const [linkUrl, setLinkUrl] = useState('');
   const [linkError, setLinkError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [saveStatus, track] = useSaveStatus();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [songId]);
 
   if (!song) {
     return (
@@ -35,6 +41,7 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
   }
 
   const playlists = getPlaylistsContainingSong(song.id, band.playlists);
+  const adjacent = playlist && onSelectSong ? getAdjacentSongs(playlist, band.songs, song.id) : null;
 
   const save = (fields: { name?: string; lyrics?: string; chords?: string; structure?: string }) => {
     track(
@@ -97,6 +104,32 @@ export function SongDetail({ band, songId, apply, canEdit, onOpenPlaylist, onBac
       <button type="button" className="back-btn" onClick={onBack}>
         → חזרה
       </button>
+
+      {playlist && adjacent && onSelectSong && (
+        <nav className="song-nav" aria-label="ניווט בפלייליסט">
+          <button
+            type="button"
+            className="icon-btn"
+            disabled={!adjacent.prev}
+            onClick={() => adjacent.prev && onSelectSong(adjacent.prev.id)}
+            aria-label="השיר הקודם"
+          >
+            <Icon name="chevron-right" />
+          </button>
+          <span className="song-nav-label">
+            {adjacent.index + 1} / {adjacent.total} · {playlist.name}
+          </span>
+          <button
+            type="button"
+            className="icon-btn"
+            disabled={!adjacent.next}
+            onClick={() => adjacent.next && onSelectSong(adjacent.next.id)}
+            aria-label="השיר הבא"
+          >
+            <Icon name="chevron-left" />
+          </button>
+        </nav>
+      )}
 
       {editing && canEdit ? (
         <>

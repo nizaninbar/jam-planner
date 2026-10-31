@@ -11,7 +11,9 @@ export type IconName =
   | 'bell'
   | 'bell-off'
   | 'settings'
-  | 'logout';
+  | 'logout'
+  | 'chevron-right'
+  | 'chevron-left';
 
 // One consistent set of line icons (emoji look different on every OS). Decorative: the parent button
 // carries the aria-label.
@@ -29,6 +31,8 @@ const PATHS: Record<IconName, string> = {
   'bell-off': 'M5 8a5 5 0 018-4M15 8c0 3 .6 4.7 1.3 5.6M3 14s2-1 2-6M8.5 17h3M3 3l14 14',
   settings: 'M10 12.5a2.5 2.5 0 100-5 2.5 2.5 0 000 5zM10 2v2.5M10 15.5V18M2 10h2.5M15.5 10H18M4.3 4.3l1.8 1.8M13.9 13.9l1.8 1.8M15.7 4.3l-1.8 1.8M6.1 13.9l-1.8 1.8',
   logout: 'M8 3H4v14h4M12 6l4 4-4 4M16 10H8',
+  'chevron-right': 'M7 3l7 7-7 7',
+  'chevron-left': 'M13 3l-7 7 7 7',
 };
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {

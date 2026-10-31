@@ -12,6 +12,13 @@ export function getPlaylistSongs(playlist: Playlist, songs: Song[]): Song[] {
   });
 }
 
+export function getAdjacentSongs(playlist: Playlist, songs: Song[], songId: string) {
+  const list = getPlaylistSongs(playlist, songs);
+  const index = list.findIndex((s) => s.id === songId);
+  if (index < 0) return null;
+  return { prev: list[index - 1], next: list[index + 1], index, total: list.length };
+}
+
 export function getPlaylistsContainingSong(songId: string, playlists: Playlist[]): Playlist[] {
   return playlists.filter((p) => p.entries.some((e) => e.songId === songId));
 }

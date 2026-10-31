@@ -1445,3 +1445,24 @@ body {
     transform: rotate(20deg) scale(1.08);
   }
 }
+
+.song-nav {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 6px 0;
+  margin-bottom: 8px;
+  background: var(--bg-main);
+}
+.song-nav-label {
+  flex: 1;
+  text-align: center;
+  font-size: 0.9rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

@@ -36,7 +36,7 @@ import { getMemberStatus, toIsoDate } from './utils/calendar';
 import { newId } from './utils/id';
 import { canEditAvailability, canEditContent, canManageAccess } from './utils/permissions';
 
-type View = { section: Section; playlistId?: string; songId?: string };
+type View = { section: Section; playlistId?: string; songId?: string; fromPlaylistId?: string };
 
 type AuthState =
   | { status: 'loading' }
@@ -221,13 +221,27 @@ function App() {
       {view.section === 'calendar' && <Calendar band={band} onDayClick={setSelectedDate} />}
       {view.section === 'admin' && canManageAccess(account) && <MembersAdminView band={band} />}
       {view.section === 'playlists' &&
-        (view.playlistId ? (
+        (view.songId ? (
+          <SongDetail
+            key={view.songId}
+            band={band}
+            songId={view.songId}
+            apply={apply}
+            canEdit={editContent}
+            playlist={band.playlists.find((p) => p.id === view.fromPlaylistId)}
+            onSelectSong={(songId) => setView({ ...view, songId })}
+            onOpenPlaylist={openPlaylist}
+            onBack={() => setView({ section: 'playlists', playlistId: view.fromPlaylistId })}
+          />
+        ) : view.playlistId ? (
           <PlaylistDetail
             band={band}
             playlistId={view.playlistId}
             apply={apply}
             canEdit={editContent}
-            onOpenSong={(songId) => setView({ section: 'songs', songId })}
+            onOpenSong={(songId) =>
+              setView({ section: 'playlists', songId, fromPlaylistId: view.playlistId })
+            }
             onBack={() => setView({ section: 'playlists' })}
           />
         ) : (
