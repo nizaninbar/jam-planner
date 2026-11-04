@@ -121,9 +121,9 @@ export async function signInWithPassword(username: string, password: string): Pr
 }
 
 /**
- * Gives the current (anonymous) user a username and password, keeping the same user id so member +
- * role are kept. Done by the `set-credentials` edge function because updateUser({ email }) on an
- * anonymous user is unreliable (invalid-email errors, forced confirmation mail).
+ * Turns the current (anonymous) user into a username/password login. The `set-credentials` edge
+ * function creates a real user and moves this member's access (role, devices) to it, because upgrading
+ * an anonymous user in place is unreliable on Supabase; then we sign in as that user.
  */
 export async function attachPassword(username: string, password: string): Promise<void> {
   const { data, error } = await supabase.functions.invoke('set-credentials', {
@@ -140,7 +140,8 @@ export async function attachPassword(username: string, password: string): Promis
       /already|registered|exists/i.test(message) ? 'שם המשתמש תפוס, נסה שם אחר.' : `Failed to set username: ${message}`,
     );
   }
-  await supabase.auth.refreshSession();
+  // The anonymous user was replaced by a real one, so the old session is gone: sign in as the new user.
+  await signInWithPassword(username, password);
 }
 
 export async function signInWithGoogle(): Promise<void> {
