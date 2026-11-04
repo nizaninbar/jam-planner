@@ -4,7 +4,9 @@ import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
 import { CalendarSkeleton } from './components/CalendarSkeleton';
 import { MembersAdminView } from './components/MembersAdminView';
-import { NavTabs, type Section } from './components/NavTabs';
+import { getSections, NavTabs, type Section } from './components/NavTabs';
+import { useHistoryNav } from './hooks/useHistoryNav';
+import { useSwipeNav } from './hooks/useSwipeNav';
 import { NoAccessScreen } from './components/NoAccessScreen';
 import { Toast } from './components/Toast';
 import { PlaylistDetail } from './components/PlaylistDetail';
@@ -38,6 +40,11 @@ import type { Account, AvailabilityStatus, Band, EventType } from './types/band'
 import { getMemberStatus, toIsoDate } from './utils/calendar';
 import { newId } from './utils/id';
 import { canEditAvailability, canEditContent, canManageAccess } from './utils/permissions';
+
+function parseIsoDate(iso: string): Date {
+  const [y, m, d] = iso.split('-').map(Number);
+  return new Date(y, m - 1, d);
+}
 
 type View = { section: Section; playlistId?: string; songId?: string; fromPlaylistId?: string };
 
@@ -124,6 +131,32 @@ function App() {
       })
       .catch((err: Error) => setToast(err.message));
   };
+
+  const ready = auth.status === 'ready' && band !== null;
+  const showAdmin = auth.status === 'ready' && canManageAccess(auth.account);
+  const selectedIso = selectedDate ? toIsoDate(selectedDate) : null;
+
+  // Phone back gesture steps through in-app views and the open day instead of closing the app.
+  useHistoryNav(
+    { view, date: selectedIso },
+    (nav) => {
+      setView(nav.view);
+      setSelectedDate(nav.date ? parseIsoDate(nav.date) : null);
+    },
+    ready,
+  );
+
+  // Horizontal swipe moves between the top-level tabs (RTL: swiping left goes to the next tab).
+  useSwipeNav(
+    (direction) => {
+      const sections = getSections(showAdmin);
+      const next = sections[sections.indexOf(view.section) - direction];
+      if (next) {
+        setView({ section: next });
+      }
+    },
+    ready && !selectedDate,
+  );
 
   if (error) {
     return <div className="loading">שגיאה בטעינת הנתונים: {error}</div>;
