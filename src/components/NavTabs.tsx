@@ -7,6 +7,10 @@ const TABS: { section: Section; icon: string; label: string }[] = [
   { section: 'admin', icon: '🔑', label: 'ניהול' },
 ];
 
+export function getSections(showAdmin: boolean): Section[] {
+  return TABS.filter((tab) => showAdmin || tab.section !== 'admin').map((tab) => tab.section);
+}
+
 interface NavTabsProps {
   active: Section;
   showAdmin: boolean;
