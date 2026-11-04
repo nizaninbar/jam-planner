@@ -30,7 +30,7 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
 * Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links
 
-* Access control: personal invite links, optional Google sign-in, and admin / member / viewer roles enforced by Supabase RLS (see below)
+* Access control: personal invite links, optional username/password or Google sign-in (see `docs/AUTH.md`), and admin / member / viewer roles enforced by Supabase RLS (see below)
 
 ### Access setup (one time)
 1. In Supabase -> Authentication: allow **anonymous sign-ins** and **manual linking**, and enable the **Google** provider (Google Cloud OAuth client; allow the site URL as a redirect).

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import type { LoginMethods } from '../data/authService';
 import { disablePush, enablePush, getPushStatus, type PushStatus } from '../data/pushService';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { CredentialsForm } from './CredentialsForm';
@@ -7,7 +8,7 @@ import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsMenuProps {
   bandId: string;
-  hasLogin: boolean;
+  methods: LoginMethods;
   onAttachGoogle: () => void;
   onAttachPassword: (username: string, password: string) => Promise<void>;
   onSignOut: () => void;
@@ -15,7 +16,7 @@ interface SettingsMenuProps {
 
 // Account/settings popover: Google, reminders, theme and sign-out. The dot on the button shows while
 // Google isn't attached or reminders are still off on this device.
-export function SettingsMenu({ bandId, hasLogin, onAttachGoogle, onAttachPassword, onSignOut }: SettingsMenuProps) {
+export function SettingsMenu({ bandId, methods, onAttachGoogle, onAttachPassword, onSignOut }: SettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const [installStatus, install] = useInstallPrompt();
   const [push, setPush] = useState<PushStatus | null>(null);
@@ -66,6 +67,7 @@ export function SettingsMenu({ bandId, hasLogin, onAttachGoogle, onAttachPasswor
     setBusy(false);
   };
 
+  const hasLogin = methods.google || methods.password;
   const needsAttention = !hasLogin || push === 'off';
 
   return (
@@ -89,6 +91,14 @@ export function SettingsMenu({ bandId, hasLogin, onAttachGoogle, onAttachPasswor
               <span>הגדר שם משתמש וסיסמה כדי להיכנס מכל מכשיר (גם באייפון).</span>
               <CredentialsForm submitLabel="שמור כניסה" validate onSubmit={onAttachPassword} />
               <span>או:</span>
+              <button type="button" className="toggle-btn toggle-available" onClick={onAttachGoogle}>
+                צרף Google
+              </button>
+            </div>
+          )}
+          {methods.password && !methods.google && (
+            <div className="settings-row">
+              <span>אפשר לחבר גם חשבון Google ולהיכנס בשתי הדרכים.</span>
               <button type="button" className="toggle-btn toggle-available" onClick={onAttachGoogle}>
                 צרף Google
               </button>

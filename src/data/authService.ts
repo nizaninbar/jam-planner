@@ -82,10 +82,19 @@ export async function getMyAccount(): Promise<Account | null> {
   return { bandId: data.band_id, role: data.role as Role, memberId: data.member_id ?? undefined };
 }
 
-/** True once the user can sign in again later (username/password or Google), i.e. is no longer a bare anonymous user. */
-export async function hasLogin(): Promise<boolean> {
+export interface LoginMethods {
+  google: boolean;
+  password: boolean;
+}
+
+/** Which ways this user can sign in again later. Neither = still a bare anonymous (invite-link) session. */
+export async function getLoginMethods(): Promise<LoginMethods> {
   const { data } = await supabase.auth.getUser();
-  return data.user ? !data.user.is_anonymous || Boolean(data.user.email) : false;
+  const identities = data.user?.identities ?? [];
+  return {
+    google: identities.some((i) => i.provider === 'google'),
+    password: identities.some((i) => i.provider === 'email'),
+  };
 }
 
 // Supabase password auth is email-based. A plain username is stored as a synthetic address that never
