@@ -115,7 +115,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
           const devices = accounts.filter((a) => a.memberId === member.id);
           const pending = invites.filter((i) => i.memberId === member.id);
           const role = devices[0]?.role ?? pending[0]?.role ?? 'member';
-          const googleLinked = devices.some((d) => d.googleLinked);
+          const hasLogin = devices.some((d) => d.hasLogin);
           return (
             <li key={member.id} className="member-card">
               <div className="member-card-head">
@@ -125,7 +125,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
                     ? pending.length > 0
                       ? 'הוזמן/ה'
                       : 'אין גישה'
-                    : `${devices.length} מכשירים${googleLinked ? ' · Google מחובר' : ' · ללא Google'}`}
+                    : `${devices.length} מכשירים${hasLogin ? ' · כניסה מוגדרת' : ' · ללא כניסה'}`}
                 </span>
               </div>
               <div className="inline-form">
@@ -148,7 +148,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
               {devices.map((device, index) => (
                 <div className="order-row" key={device.userId}>
                   <span className="list-item-meta">
-                    מכשיר {index + 1} · {device.googleLinked ? 'Google' : 'אנונימי'} · {formatDate(device.createdAt)}
+                    מכשיר {index + 1} · {device.hasLogin ? 'כניסה מוגדרת' : 'אנונימי'} · {formatDate(device.createdAt)}
                   </span>
                   <button
                     type="button"
@@ -202,7 +202,7 @@ export function MembersAdminView({ band }: MembersAdminViewProps) {
                 {memberName(account.memberId)} {index + 1}
               </span>
               <span className="list-item-meta">
-                {account.googleLinked ? 'Google' : 'אנונימי'} · {formatDate(account.createdAt)}
+                {account.hasLogin ? 'כניסה מוגדרת' : 'אנונימי'} · {formatDate(account.createdAt)}
               </span>
             </div>
             <div className="inline-form">

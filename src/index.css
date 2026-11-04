@@ -1134,6 +1134,22 @@ body {
   min-height: 44px;
 }
 
+.credentials-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.credentials-form input {
+  min-height: 44px;
+  font-size: 16px; /* prevents iOS Safari zooming on focus */
+}
+
+.credentials-form .toggle-btn {
+  min-height: 44px;
+}
+
 .link-box {
   display: flex;
   flex-direction: column;
@@ -1290,6 +1306,15 @@ body {
 
 .settings-row > span {
   flex: 1 1 140px;
+}
+
+.settings-row-stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.settings-row-stack > span {
+  flex: 0 0 auto;
 }
 
 .settings-row .toggle-btn {
