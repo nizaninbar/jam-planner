@@ -146,11 +146,11 @@ function App() {
     ready,
   );
 
-  // Horizontal swipe moves between the top-level tabs (RTL: swiping left goes to the next tab).
+  // Horizontal swipe moves between the top-level tabs (RTL: swiping right goes to the next tab).
   useSwipeNav(
     (direction) => {
       const sections = getSections(showAdmin);
-      const next = sections[sections.indexOf(view.section) - direction];
+      const next = sections[sections.indexOf(view.section) + direction];
       if (next) {
         setView({ section: next });
       }
