@@ -36,6 +36,8 @@ Identity & access: `src/data/authService.ts` is the only caller of `supabase.aut
 
 Reminders: an `Event` has an optional `remindAt` (set in `DayEditorModal`, saved via `setEventReminder`). Delivery is Web Push: `src/data/pushService.ts` (the only caller of the push APIs) subscribes the device into `push_subscriptions`; `supabase/functions/send-reminders` (run by pg_cron every 5 min) sends due reminders. PWA files live in `public/`. Setup and testing: `docs/REMINDERS.md`.
 
+Sign-in methods (invite link, username+password, Google), the `set-credentials` flow, setup and troubleshooting: `docs/AUTH.md`. Shipping: `/ship` runs `scripts/ship.ps1` (as GitHub account `nizaninbar`, squash-merges to `main`; it does not deploy Supabase functions or run SQL).
+
 Product goals and the Playlists spec are in `docs/GOALS.md` — read it before proposing features.
 The open UI/UX backlog (IDs UX-01…UX-27, in phases, with checkboxes) is in `docs/UX_REVIEW.md` —
 work through it phase by phase and tick items off as they land.

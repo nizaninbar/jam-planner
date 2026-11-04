@@ -16,8 +16,9 @@ import {
   attachPassword,
   claimInvite,
   getMyAccount,
-  hasLogin,
+  getLoginMethods,
   hasSession,
+  type LoginMethods,
   signInWithGoogle,
   signInWithPassword,
   signOut,
@@ -43,7 +44,7 @@ type View = { section: Section; playlistId?: string; songId?: string; fromPlayli
 type AuthState =
   | { status: 'loading' }
   | { status: 'none'; message: string | null; signedIn: boolean }
-  | { status: 'ready'; account: Account; hasLogin: boolean };
+  | { status: 'ready'; account: Account; methods: LoginMethods };
 
 interface Session {
   auth: AuthState;
@@ -67,8 +68,8 @@ async function loadSession(oauthError: string | null, inviteToken: string | null
   if (!account) {
     return { auth: { status: 'none', message, signedIn: true } };
   }
-  const [band, loggedIn] = await Promise.all([getBand(account.bandId), hasLogin()]);
-  return { auth: { status: 'ready', account, hasLogin: loggedIn }, band };
+  const [band, methods] = await Promise.all([getBand(account.bandId), getLoginMethods()]);
+  return { auth: { status: 'ready', account, methods }, band };
 }
 
 // Applies an availability change locally (absence of a record means available).
@@ -223,11 +224,11 @@ function App() {
       <AppHeader
         bandId={band.id}
         bandName={band.name}
-        hasLogin={auth.hasLogin}
+        methods={auth.methods}
         onAttachGoogle={() => handleGoogle(attachGoogle)}
         onAttachPassword={async (username, password) => {
           await attachPassword(username, password);
-          setAuth((current) => (current.status === 'ready' ? { ...current, hasLogin: true } : current));
+          setAuth((current) => (current.status === 'ready' ? { ...current, methods: { ...current.methods, password: true } } : current));
         }}
         onSignOut={handleSignOut}
       />
