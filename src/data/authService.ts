@@ -82,25 +82,25 @@ export async function getMyAccount(): Promise<Account | null> {
   return { bandId: data.band_id, role: data.role as Role, memberId: data.member_id ?? undefined };
 }
 
-/** True once the user can sign in again later (Google or username/password), i.e. is no longer anonymous. */
+/** True once the user can sign in again later (username/password or Google), i.e. is no longer a bare anonymous user. */
 export async function hasLogin(): Promise<boolean> {
   const { data } = await supabase.auth.getUser();
-  return data.user ? !data.user.is_anonymous : false;
+  return data.user ? !data.user.is_anonymous || Boolean(data.user.email) : false;
 }
 
-// Supabase password auth is email-based, so a username is stored as a synthetic address that never
-// receives mail (requires "Confirm email" to be off in the Supabase dashboard).
-const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
-export const MIN_PASSWORD_LENGTH = 8;
+// Supabase password auth is email-based. A plain username is stored as a synthetic address that never
+// receives mail; anything containing "@" is used as the email as-is.
+export const MIN_PASSWORD_LENGTH = 6;
 
 function usernameToEmail(username: string): string {
-  return `${username.trim().toLowerCase()}@users.jam-planner.app`;
+  const name = username.trim().toLowerCase();
+  return name.includes('@') ? name : `${name}@users.jam-planner.app`;
 }
 
 /** Returns a Hebrew error message, or null when valid. */
 export function validateCredentials(username: string, password: string): string | null {
-  if (!USERNAME_PATTERN.test(username.trim().toLowerCase())) {
-    return 'שם משתמש: 3–30 תווים באנגלית, ספרות, נקודה, קו תחתון או מקף.';
+  if (!username.trim() || /\s/.test(username.trim())) {
+    return 'שם משתמש לא יכול להיות ריק או להכיל רווחים.';
   }
   if (password.length < MIN_PASSWORD_LENGTH) {
     return `הסיסמה חייבת להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים.`;
@@ -120,16 +120,27 @@ export async function signInWithPassword(username: string, password: string): Pr
   }
 }
 
-/** Upgrades the current (anonymous) user in place: same user id, so member + role are kept. */
+/**
+ * Gives the current (anonymous) user a username and password, keeping the same user id so member +
+ * role are kept. Done by the `set-credentials` edge function because updateUser({ email }) on an
+ * anonymous user is unreliable (invalid-email errors, forced confirmation mail).
+ */
 export async function attachPassword(username: string, password: string): Promise<void> {
-  const { error } = await supabase.auth.updateUser({ email: usernameToEmail(username), password });
-  if (error) {
+  const { data, error } = await supabase.functions.invoke('set-credentials', {
+    body: { email: usernameToEmail(username), password },
+  });
+  let message = (data as { error?: string } | null)?.error;
+  if (error && !message) {
+    const response = (error as { context?: Response }).context;
+    message = await response?.json().then((body: { error?: string }) => body.error).catch(() => undefined);
+    message ??= error.message;
+  }
+  if (message) {
     throw new Error(
-      error.message.toLowerCase().includes('already')
-        ? 'שם המשתמש תפוס, נסה שם אחר.'
-        : `Failed to set username: ${error.message}`,
+      /already|registered|exists/i.test(message) ? 'שם המשתמש תפוס, נסה שם אחר.' : `Failed to set username: ${message}`,
     );
   }
+  await supabase.auth.refreshSession();
 }
 
 export async function signInWithGoogle(): Promise<void> {
