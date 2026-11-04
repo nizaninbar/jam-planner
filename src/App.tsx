@@ -13,11 +13,13 @@ import { SongDetail } from './components/SongDetail';
 import { SongsView } from './components/SongsView';
 import {
   attachGoogle,
+  attachPassword,
   claimInvite,
   getMyAccount,
+  hasLogin,
   hasSession,
-  isGoogleLinked,
   signInWithGoogle,
+  signInWithPassword,
   signOut,
   takeInviteToken,
   takeOAuthError,
@@ -41,7 +43,7 @@ type View = { section: Section; playlistId?: string; songId?: string; fromPlayli
 type AuthState =
   | { status: 'loading' }
   | { status: 'none'; message: string | null; signedIn: boolean }
-  | { status: 'ready'; account: Account; googleLinked: boolean };
+  | { status: 'ready'; account: Account; hasLogin: boolean };
 
 interface Session {
   auth: AuthState;
@@ -65,8 +67,8 @@ async function loadSession(oauthError: string | null, inviteToken: string | null
   if (!account) {
     return { auth: { status: 'none', message, signedIn: true } };
   }
-  const [band, googleLinked] = await Promise.all([getBand(account.bandId), isGoogleLinked()]);
-  return { auth: { status: 'ready', account, googleLinked }, band };
+  const [band, loggedIn] = await Promise.all([getBand(account.bandId), hasLogin()]);
+  return { auth: { status: 'ready', account, hasLogin: loggedIn }, band };
 }
 
 // Applies an availability change locally (absence of a record means available).
@@ -102,6 +104,16 @@ function App() {
     action().catch((err: Error) => setToast(err.message));
   };
 
+  const reloadSession = () => {
+    setAuth({ status: 'loading' });
+    loadSession(null, null)
+      .then((session) => {
+        setAuth(session.auth);
+        setBand(session.band ?? null);
+      })
+      .catch((err: Error) => setError(err.message));
+  };
+
   const handleSignOut = () => {
     signOut()
       .then(() => {
@@ -126,6 +138,8 @@ function App() {
         message={auth.message}
         signedIn={auth.signedIn}
         onGoogleSignIn={() => handleGoogle(signInWithGoogle)}
+        onPasswordSignIn={signInWithPassword}
+        onSignedIn={reloadSession}
         onSignOut={handleSignOut}
       />
     );
@@ -209,8 +223,12 @@ function App() {
       <AppHeader
         bandId={band.id}
         bandName={band.name}
-        googleLinked={auth.googleLinked}
+        hasLogin={auth.hasLogin}
         onAttachGoogle={() => handleGoogle(attachGoogle)}
+        onAttachPassword={async (username, password) => {
+          await attachPassword(username, password);
+          setAuth((current) => (current.status === 'ready' ? { ...current, hasLogin: true } : current));
+        }}
         onSignOut={handleSignOut}
       />
       <NavTabs

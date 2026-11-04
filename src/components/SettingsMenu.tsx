@@ -1,19 +1,21 @@
 import { useEffect, useRef, useState } from 'react';
 import { disablePush, enablePush, getPushStatus, type PushStatus } from '../data/pushService';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { CredentialsForm } from './CredentialsForm';
 import { Icon } from './Icon';
 import { ThemeToggle } from './ThemeToggle';
 
 interface SettingsMenuProps {
   bandId: string;
-  googleLinked: boolean;
+  hasLogin: boolean;
   onAttachGoogle: () => void;
+  onAttachPassword: (username: string, password: string) => Promise<void>;
   onSignOut: () => void;
 }
 
 // Account/settings popover: Google, reminders, theme and sign-out. The dot on the button shows while
 // Google isn't attached or reminders are still off on this device.
-export function SettingsMenu({ bandId, googleLinked, onAttachGoogle, onSignOut }: SettingsMenuProps) {
+export function SettingsMenu({ bandId, hasLogin, onAttachGoogle, onAttachPassword, onSignOut }: SettingsMenuProps) {
   const [open, setOpen] = useState(false);
   const [installStatus, install] = useInstallPrompt();
   const [push, setPush] = useState<PushStatus | null>(null);
@@ -64,7 +66,7 @@ export function SettingsMenu({ bandId, googleLinked, onAttachGoogle, onSignOut }
     setBusy(false);
   };
 
-  const needsAttention = !googleLinked || push === 'off';
+  const needsAttention = !hasLogin || push === 'off';
 
   return (
     <div className="settings-wrap" ref={wrapRef}>
@@ -82,9 +84,11 @@ export function SettingsMenu({ bandId, googleLinked, onAttachGoogle, onSignOut }
       </button>
       {open && (
         <div className="settings-menu">
-          {!googleLinked && (
-            <div className="settings-row">
-              <span>צרף חשבון Google כדי להיכנס בקלות מכל מכשיר.</span>
+          {!hasLogin && (
+            <div className="settings-row settings-row-stack">
+              <span>הגדר שם משתמש וסיסמה כדי להיכנס מכל מכשיר (גם באייפון).</span>
+              <CredentialsForm submitLabel="שמור כניסה" validate onSubmit={onAttachPassword} />
+              <span>או:</span>
               <button type="button" className="toggle-btn toggle-available" onClick={onAttachGoogle}>
                 צרף Google
               </button>

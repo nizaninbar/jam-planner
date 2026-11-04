@@ -8,7 +8,7 @@ export interface AccountRow {
   userId: string;
   memberId?: string;
   role: Role;
-  googleLinked: boolean;
+  hasLogin: boolean;
   createdAt: string;
 }
 
@@ -82,9 +82,54 @@ export async function getMyAccount(): Promise<Account | null> {
   return { bandId: data.band_id, role: data.role as Role, memberId: data.member_id ?? undefined };
 }
 
-export async function isGoogleLinked(): Promise<boolean> {
+/** True once the user can sign in again later (Google or username/password), i.e. is no longer anonymous. */
+export async function hasLogin(): Promise<boolean> {
   const { data } = await supabase.auth.getUser();
-  return data.user?.identities?.some((i) => i.provider === 'google') ?? false;
+  return data.user ? !data.user.is_anonymous : false;
+}
+
+// Supabase password auth is email-based, so a username is stored as a synthetic address that never
+// receives mail (requires "Confirm email" to be off in the Supabase dashboard).
+const USERNAME_PATTERN = /^[a-z0-9._-]{3,30}$/;
+export const MIN_PASSWORD_LENGTH = 8;
+
+function usernameToEmail(username: string): string {
+  return `${username.trim().toLowerCase()}@users.jam-planner.app`;
+}
+
+/** Returns a Hebrew error message, or null when valid. */
+export function validateCredentials(username: string, password: string): string | null {
+  if (!USERNAME_PATTERN.test(username.trim().toLowerCase())) {
+    return 'שם משתמש: 3–30 תווים באנגלית, ספרות, נקודה, קו תחתון או מקף.';
+  }
+  if (password.length < MIN_PASSWORD_LENGTH) {
+    return `הסיסמה חייבת להכיל לפחות ${MIN_PASSWORD_LENGTH} תווים.`;
+  }
+  return null;
+}
+
+export async function signInWithPassword(username: string, password: string): Promise<void> {
+  const { error } = await supabase.auth.signInWithPassword({
+    email: usernameToEmail(username),
+    password,
+  });
+  if (error) {
+    throw new Error(
+      error.message.toLowerCase().includes('invalid login') ? 'שם משתמש או סיסמה שגויים.' : error.message,
+    );
+  }
+}
+
+/** Upgrades the current (anonymous) user in place: same user id, so member + role are kept. */
+export async function attachPassword(username: string, password: string): Promise<void> {
+  const { error } = await supabase.auth.updateUser({ email: usernameToEmail(username), password });
+  if (error) {
+    throw new Error(
+      error.message.toLowerCase().includes('already')
+        ? 'שם המשתמש תפוס, נסה שם אחר.'
+        : `Failed to set username: ${error.message}`,
+    );
+  }
 }
 
 export async function signInWithGoogle(): Promise<void> {
@@ -119,7 +164,7 @@ export async function listAccounts(bandId: string): Promise<AccountRow[]> {
       userId: a.user_id,
       memberId: a.member_id ?? undefined,
       role: a.role,
-      googleLinked: !a.is_anonymous,
+      hasLogin: !a.is_anonymous,
       createdAt: a.created_at,
     }),
   );

@@ -4,18 +4,19 @@ import { SettingsMenu } from './SettingsMenu';
 interface AppHeaderProps {
   bandId: string;
   bandName: string;
-  googleLinked: boolean;
+  hasLogin: boolean;
   onAttachGoogle: () => void;
+  onAttachPassword: (username: string, password: string) => Promise<void>;
   onSignOut: () => void;
 }
 
 const SIGN_OUT_CONFIRM = 'להתנתק?';
-const SIGN_OUT_CONFIRM_NO_GOOGLE =
-  'חשבון Google לא מחובר, ולכן אחרי ההתנתקות תצטרכו קישור הזמנה חדש כדי להיכנס שוב. מומלץ לחבר את Google קודם.\n\nלהתנתק בכל זאת?';
+const SIGN_OUT_CONFIRM_NO_LOGIN =
+  'לא הוגדרה כניסה (שם משתמש וסיסמה או Google), ולכן אחרי ההתנתקות תצטרכו קישור הזמנה חדש כדי להיכנס שוב. מומלץ להגדיר כניסה קודם.\n\nלהתנתק בכל זאת?';
 
-export function AppHeader({ bandId, bandName, googleLinked, onAttachGoogle, onSignOut }: AppHeaderProps) {
+export function AppHeader({ bandId, bandName, hasLogin, onAttachGoogle, onAttachPassword, onSignOut }: AppHeaderProps) {
   const handleSignOut = () => {
-    if (window.confirm(googleLinked ? SIGN_OUT_CONFIRM : SIGN_OUT_CONFIRM_NO_GOOGLE)) {
+    if (window.confirm(hasLogin ? SIGN_OUT_CONFIRM : SIGN_OUT_CONFIRM_NO_LOGIN)) {
       onSignOut();
     }
   };
@@ -29,8 +30,9 @@ export function AppHeader({ bandId, bandName, googleLinked, onAttachGoogle, onSi
       <span className="band-pill">{bandName}</span>
       <SettingsMenu
         bandId={bandId}
-        googleLinked={googleLinked}
+        hasLogin={hasLogin}
         onAttachGoogle={onAttachGoogle}
+        onAttachPassword={onAttachPassword}
         onSignOut={handleSignOut}
       />
     </header>
