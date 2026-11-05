@@ -105,7 +105,7 @@ async function handleTest(req: Request): Promise<Response> {
 async function handleCron(): Promise<Response> {
   const { data: due, error } = await supabase
     .from('gigs')
-    .select('id,band_id,date,label,type,location')
+    .select('id,band_id,date,start_time,label,type,location')
     .lte('remind_at', new Date().toISOString())
     .is('reminder_sent_at', null);
   if (error) {
@@ -130,10 +130,11 @@ async function handleCron(): Promise<Response> {
       .select('endpoint,p256dh,auth')
       .eq('band_id', ev.band_id);
     const [y, m, d] = (ev.date as string).split('-');
-    const where = ev.location ? ` · 📍 ${ev.location}` : '';
+    const at = ev.start_time ? ` · 🕐 ${(ev.start_time as string).slice(0, 5)}` : '';
+    const where =ev.location ? ` · 📍 ${ev.location}` : '';
     sent += await sendTo((subs ?? []) as Subscription[], {
       title: `${EVENT_TYPE_LABELS[ev.type] ?? 'אירוע'} - ${ev.label}`,
-      body: `${d}/${m}/${y}${where}`,
+      body: `${d}/${m}/${y}${at}${where}`,
       url: './',
     });
     events += 1;

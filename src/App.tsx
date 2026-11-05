@@ -34,10 +34,12 @@ import {
   getBand,
   setEventPlaylist,
   setEventReminder,
+  setEventTime,
   setMemberAvailability,
 } from './data/bandService';
 import type { Account, AvailabilityStatus, Band, EventType } from './types/band';
 import { getMemberStatus, toIsoDate } from './utils/calendar';
+import { remindAtAfterTimeChange } from './utils/events';
 import { newId } from './utils/id';
 import { canEditAvailability, canEditContent, canManageAccess } from './utils/permissions';
 
@@ -209,11 +211,11 @@ function App() {
       );
   };
 
-  const handleCreateEvent = (type: EventType, label: string, location?: string) => {
+  const handleCreateEvent = (type: EventType, label: string, location?: string, time?: string) => {
     if (!selectedDate) {
       return;
     }
-    createEvent(band.id, toIsoDate(selectedDate), type, label, location)
+    createEvent(band.id, toIsoDate(selectedDate), type, label, location, time)
       .then(setBand)
       .catch((err: Error) => setToast(err.message));
   };
@@ -334,6 +336,10 @@ function App() {
           onOpenPlaylist={openPlaylist}
           onCreateEventPlaylist={handleCreateEventPlaylist}
           onLinkPlaylist={handleLinkPlaylist}
+          onSetTime={(eventId, time) => {
+            const event = band.events.find((e) => e.id === eventId);
+            apply(setEventTime(band.id, eventId, time, event && remindAtAfterTimeChange(event, time)));
+          }}
           onSetReminder={(eventId, remindAt) => apply(setEventReminder(band.id, eventId, remindAt))}
           onClose={() => setSelectedDate(null)}
         />

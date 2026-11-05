@@ -1,5 +1,6 @@
 import type { AvailabilityStatus, Band, EventType } from '../types/band';
 import { supabase } from './supabaseClient';
+import { initialRemindAt } from '../utils/events';
 import { newId } from '../utils/id';
 
 interface RawEvent {
@@ -8,6 +9,7 @@ interface RawEvent {
   label: string;
   type: EventType;
   location: string | null;
+  start_time: string | null;
   playlist_id: string | null;
   remind_at: string | null;
   reminder_sent_at: string | null;
@@ -56,6 +58,7 @@ function mapBand(raw: RawBand): Band {
       type: g.type,
       label: g.label,
       location: g.location ?? undefined,
+      time: g.start_time?.slice(0, 5) ?? undefined, // Postgres returns "HH:MM:SS"
       playlistId: g.playlist_id ?? undefined,
       remindAt: g.remind_at ?? undefined,
       reminderSent: g.reminder_sent_at !== null,
@@ -90,7 +93,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
+      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,start_time,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
     )
     .eq('id', bandId)
     .single();
@@ -136,6 +139,7 @@ export async function createEvent(
   type: EventType,
   label: string,
   location?: string,
+  time?: string,
 ): Promise<Band> {
   const { error } = await supabase.from('gigs').insert({
     id: newId(),
@@ -144,6 +148,8 @@ export async function createEvent(
     type,
     label,
     location: location || null,
+    start_time: time || null,
+    remind_at: initialRemindAt(date, time) ?? null,
   });
 
   if (error) {
@@ -270,6 +276,28 @@ export async function setEventPlaylist(
     .update({ playlist_id: playlistId })
     .match({ id: eventId, band_id: bandId });
   if (error) fail('link playlist to event', error);
+  return getBand(bandId);
+}
+
+/**
+ * Sets (or clears, with null) the event's start time, as "HH:MM". Pass `remindAt` (an ISO instant or
+ * null) to move the reminder along with it and re-arm it; leave it undefined to keep the reminder as is.
+ */
+export async function setEventTime(
+  bandId: string,
+  eventId: string,
+  time: string | null,
+  remindAt?: string | null,
+): Promise<Band> {
+  const { error } = await supabase
+    .from('gigs')
+    .update(
+      remindAt === undefined
+        ? { start_time: time }
+        : { start_time: time, remind_at: remindAt, reminder_sent_at: null },
+    )
+    .match({ id: eventId, band_id: bandId });
+  if (error) fail('set event time', error);
   return getBand(bandId);
 }
 

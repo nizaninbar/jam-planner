@@ -13,6 +13,8 @@ export interface Event {
   type: EventType;
   label: string;
   location?: string;
+  /** Start time as "HH:MM" (wall-clock, no zone); absent = no time set. */
+  time?: string;
   playlistId?: string;
   /** ISO timestamp of when to push a reminder; absent = no reminder. */
   remindAt?: string;
