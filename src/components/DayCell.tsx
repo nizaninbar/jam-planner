@@ -25,11 +25,16 @@ export function DayCell({ date, status, onClick }: DayCellProps) {
         type="button"
         className={`day-cell ${className}${stateClasses}`}
         onClick={onClick}
-        aria-label={`${dateLabel}, ${name}: ${status.event.label}`}
+        aria-label={`${dateLabel}${status.event.time ? ` בשעה ${status.event.time}` : ''}, ${name}: ${status.event.label}`}
       >
         <span className="date-number">{dayNumber}</span>
         <span className="gig-label cell-detail">
           <span>{icon}</span> {status.event.label}
+          {status.event.time && (
+            <span className="gig-time" dir="ltr">
+              {status.event.time}
+            </span>
+          )}
         </span>
         <span className="cell-compact" aria-hidden="true">
           {icon}

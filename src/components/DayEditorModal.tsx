@@ -31,7 +31,8 @@ interface DayEditorModalProps {
   canEditAvailability: (memberId: string) => boolean;
   pendingMemberIds: ReadonlySet<string>;
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
-  onCreateEvent: (type: EventType, label: string, location?: string) => void;
+  onCreateEvent: (type: EventType, label: string, location?: string, time?: string) => void;
+  onSetTime: (eventId: string, time: string | null) => void;
   onDeleteEvent: (eventId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onCreateEventPlaylist: (eventId: string, name: string) => void;
@@ -52,6 +53,7 @@ export function DayEditorModal({
   pendingMemberIds,
   onToggle,
   onCreateEvent,
+  onSetTime,
   onDeleteEvent,
   onOpenPlaylist,
   onCreateEventPlaylist,
@@ -63,6 +65,7 @@ export function DayEditorModal({
   const [type, setType] = useState<EventType>('rehearsal-band-only');
   const [label, setLabel] = useState('');
   const [location, setLocation] = useState('');
+  const [time, setTime] = useState('');
   const [titleError, setTitleError] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -109,10 +112,11 @@ export function DayEditorModal({
       setTitleError(true);
       return;
     }
-    onCreateEvent(type, label.trim(), location.trim() || undefined);
+    onCreateEvent(type, label.trim(), location.trim() || undefined, time || undefined);
     setIsAdding(false);
     setLabel('');
     setLocation('');
+    setTime('');
   };
 
   return (
@@ -140,8 +144,31 @@ export function DayEditorModal({
               <div className="event-info">
                 <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
                 {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
+                {!canEditContent && existingEvent.time && (
+                  <div className="event-info-location">
+                    🕐 <span dir="ltr">{existingEvent.time}</span>
+                  </div>
+                )}
               </div>
             </div>
+            {canEditContent && (
+              <div className="event-reminder">
+                <label>
+                  🕐 שעה
+                  <input
+                    type="time"
+                    key={existingEvent.time ?? 'none'}
+                    defaultValue={existingEvent.time ?? ''}
+                    onBlur={(e) => {
+                      const next = e.target.value || null;
+                      if (next !== (existingEvent.time ?? null)) {
+                        onSetTime(existingEvent.id, next);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            )}
             <div className="event-playlist">
               {eventPlaylist ? (
                 <button type="button" className="add-event-btn" onClick={() => onOpenPlaylist(eventPlaylist.id)}>
@@ -238,6 +265,10 @@ export function DayEditorModal({
                   צריך להזין כותרת
                 </span>
               )}
+            </label>
+            <label>
+              שעה (אופציונלי)
+              <input type="time" value={time} onChange={(e) => setTime(e.target.value)} />
             </label>
             <label>
               מיקום (אופציונלי)

@@ -41,7 +41,7 @@ confirmation, setlist extras, a recordings library.
 - Modern React SPA, mobile-friendly
 - Each member edits their own availability directly on the calendar
 - Shared Supabase backend (no per-browser localStorage)
-- Dates can be marked as a gig (with a location) or a rehearsal (guided or band-only)
+- Dates can be marked as a gig (with a location) or a rehearsal (guided or band-only), optionally with a start time
 - Playlists: reusable songs with lyrics/chords/structure/links, ordered playlists, optional event link
 - Identity & access: admin-created personal invite link per member, optional Google attach for
   sign-in from any device, roles admin / member / viewer enforced by RLS

@@ -3,6 +3,15 @@
 An admin/member sets a reminder date+time on an event (day editor → 🔔 תזכורת). At that time every
 device that enabled notifications gets a push, like a phone-app notification.
 
+**Event time and the default reminder.** An event can have an optional start time (`gigs.start_time`,
+a plain "HH:MM" with no time zone; run `supabase/migrate_10_add_event_time.sql`). The time shows in the
+calendar cell and the day editor, and the push body reads `dd/mm/yyyy · 🕐 HH:MM · 📍 location` (redeploy
+`send-reminders` to pick this up). When an event has a time, its reminder defaults to **5 hours before
+the start** (`DEFAULT_REMINDER_HOURS_BEFORE` in `src/utils/events.ts`), set when the event is created or
+its time is first set, unless that moment has already passed. Changing the time moves the reminder only
+while it is still the default; a reminder an admin picked by hand is left alone, and clearing the time
+removes a default reminder. Events without a time get no default reminder.
+
 How it works: the app is a PWA (`public/manifest.webmanifest`, `public/sw.js`). Each device subscribes
 and is stored in `push_subscriptions`. `pg_cron` calls the `send-reminders` edge function every 5
 minutes; it pushes events whose `remind_at` has passed and marks them sent. So a reminder arrives
