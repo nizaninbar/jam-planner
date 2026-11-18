@@ -33,6 +33,7 @@ interface DayEditorModalProps {
   onToggle: (memberId: string, nextStatus: AvailabilityStatus) => void;
   onCreateEvent: (type: EventType, label: string, location?: string, time?: string) => void;
   onSetTime: (eventId: string, time: string | null) => void;
+  onUpdateEvent: (eventId: string, type: EventType, label: string, location?: string) => void;
   onDeleteEvent: (eventId: string) => void;
   onOpenPlaylist: (playlistId: string) => void;
   onCreateEventPlaylist: (eventId: string, name: string) => void;
@@ -54,6 +55,7 @@ export function DayEditorModal({
   onToggle,
   onCreateEvent,
   onSetTime,
+  onUpdateEvent,
   onDeleteEvent,
   onOpenPlaylist,
   onCreateEventPlaylist,
@@ -61,6 +63,11 @@ export function DayEditorModal({
   onSetReminder,
   onClose,
 }: DayEditorModalProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [editType, setEditType] = useState<EventType>('gig');
+  const [editLabel, setEditLabel] = useState('');
+  const [editLocation, setEditLocation] = useState('');
+  const [editError, setEditError] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
   const [type, setType] = useState<EventType>('rehearsal-band-only');
   const [label, setLabel] = useState('');
@@ -106,6 +113,24 @@ export function DayEditorModal({
     }
   };
 
+  const startEdit = (event: Event) => {
+    setEditType(event.type);
+    setEditLabel(event.label);
+    setEditLocation(event.location ?? '');
+    setEditError(false);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = (e: FormEvent, event: Event) => {
+    e.preventDefault();
+    if (!editLabel.trim()) {
+      setEditError(true);
+      return;
+    }
+    onUpdateEvent(event.id, editType, editLabel.trim(), editLocation.trim() || undefined);
+    setIsEditing(false);
+  };
+
   const handleAdd = (e: FormEvent) => {
     e.preventDefault();
     if (!label.trim()) {
@@ -140,17 +165,64 @@ export function DayEditorModal({
 
         {existingEvent ? (
           <>
-            <div className="event-section">
-              <div className="event-info">
-                <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
-                {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
-                {!canEditContent && existingEvent.time && (
-                  <div className="event-info-location">
-                    🕐 <span dir="ltr">{existingEvent.time}</span>
-                  </div>
+            {isEditing && canEditContent ? (
+              <form className="event-form form-stack" onSubmit={(e) => handleSaveEdit(e, existingEvent)} noValidate>
+                <label>
+                  סוג
+                  <select value={editType} onChange={(e) => setEditType(e.target.value as EventType)}>
+                    <option value="rehearsal-band-only">חזרה של הלהקה</option>
+                    <option value="rehearsal-guided">חזרה מודרכת</option>
+                    <option value="gig">הופעה</option>
+                  </select>
+                </label>
+                <label>
+                  כותרת
+                  <input
+                    type="text"
+                    value={editLabel}
+                    aria-invalid={editError}
+                    onChange={(e) => {
+                      setEditLabel(e.target.value);
+                      setEditError(false);
+                    }}
+                  />
+                  {editError && (
+                    <span className="error-text" role="alert">
+                      צריך להזין כותרת
+                    </span>
+                  )}
+                </label>
+                <label>
+                  מיקום (אופציונלי)
+                  <input type="text" value={editLocation} onChange={(e) => setEditLocation(e.target.value)} />
+                </label>
+                <div className="event-form-actions">
+                  <button type="submit" className="btn btn-primary">
+                    שמור
+                  </button>
+                  <button type="button" className="btn btn-secondary" onClick={() => setIsEditing(false)}>
+                    ביטול
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="event-section">
+                <div className="event-info">
+                  <div className="event-info-label">{EVENT_TYPE_LABELS[existingEvent.type]} - {existingEvent.label}</div>
+                  {existingEvent.location && <div className="event-info-location">📍 {existingEvent.location}</div>}
+                  {!canEditContent && existingEvent.time && (
+                    <div className="event-info-location">
+                      🕐 <span dir="ltr">{existingEvent.time}</span>
+                    </div>
+                  )}
+                </div>
+                {canEditContent && (
+                  <button type="button" className="text-btn" onClick={() => startEdit(existingEvent)}>
+                    ערוך
+                  </button>
                 )}
               </div>
-            </div>
+            )}
             {canEditContent && (
               <div className="event-reminder">
                 <label>

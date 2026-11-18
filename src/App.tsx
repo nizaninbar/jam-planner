@@ -35,6 +35,7 @@ import {
   setEventPlaylist,
   setEventReminder,
   setEventTime,
+  updateEventDetails,
   setMemberAvailability,
 } from './data/bandService';
 import type { Account, AvailabilityStatus, Band, EventType } from './types/band';
@@ -340,6 +341,9 @@ function App() {
             const event = band.events.find((e) => e.id === eventId);
             apply(setEventTime(band.id, eventId, time, event && remindAtAfterTimeChange(event, time)));
           }}
+          onUpdateEvent={(eventId, type, label, location) =>
+            apply(updateEventDetails(band.id, eventId, type, label, location))
+          }
           onSetReminder={(eventId, remindAt) => apply(setEventReminder(band.id, eventId, remindAt))}
           onClose={() => setSelectedDate(null)}
         />

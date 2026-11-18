@@ -169,6 +169,21 @@ export async function deleteEvent(bandId: string, eventId: string): Promise<Band
   return getBand(bandId);
 }
 
+export async function updateEventDetails(
+  bandId: string,
+  eventId: string,
+  type: EventType,
+  label: string,
+  location?: string,
+): Promise<Band> {
+  const { error } = await supabase
+    .from('gigs')
+    .update({ type, label, location: location || null })
+    .match({ id: eventId, band_id: bandId });
+  if (error) fail('update event', error);
+  return getBand(bandId);
+}
+
 function fail(action: string, error: { message: string }): never {
   throw new Error(`Failed to ${action}: ${error.message}`);
 }
