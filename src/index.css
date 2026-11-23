@@ -168,6 +168,14 @@ body {
   flex: none;
 }
 
+.header-greeting {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
 .band-pill {
   min-width: 0;
   overflow: hidden;
@@ -1424,6 +1432,74 @@ body {
   font-size: 1.25rem;
   line-height: 1.8;
   white-space: pre-wrap;
+}
+
+/* Play-along sheet: monospace so chords stay above the syllable they belong to. */
+.chord-sheet {
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+
+.chord-pair {
+  width: max-content;
+  min-width: 100%;
+}
+
+.chord-line,
+.lyric-line {
+  margin: 0;
+  font-family: ui-monospace, Consolas, monospace;
+  white-space: pre;
+}
+
+.chord-line {
+  color: var(--accent-3);
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.5;
+}
+
+.lyric-line {
+  font-size: 1.1rem;
+  line-height: 1.5;
+}
+
+.sheet-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sheet-tool-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sheet-shift {
+  min-width: 2.2em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.sheet-reset {
+  min-height: 44px;
+  padding: 0 12px;
+  background: none;
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.sheet-hint {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.9rem;
 }
 
 .skeleton {

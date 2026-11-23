@@ -40,6 +40,8 @@ export interface Song {
   lyrics?: string;
   chords?: string;
   structure?: string;
+  /** Play-along text: lines alternate chords / lyrics (line 1 chords, line 2 lyrics, ...). */
+  sheet?: string;
   links: Link[];
 }
 
