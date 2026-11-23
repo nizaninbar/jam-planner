@@ -3,6 +3,8 @@ import { addSongLink, deleteSong, deleteSongLink, updateSong } from '../data/ban
 import { useSaveStatus } from '../hooks/useSaveStatus';
 import type { Band, Playlist } from '../types/band';
 import { getAdjacentSongs, getPlaylistsContainingSong, isHttpUrl } from '../utils/playlists';
+import { isRtlText, legacyToSheet } from '../utils/chordSheet';
+import { ChordSheet } from './ChordSheet';
 import { Icon } from './Icon';
 import { SaveIndicator } from './SaveIndicator';
 
@@ -24,6 +26,10 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
   const [linkError, setLinkError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [saveStatus, track] = useSaveStatus();
+  // Manual direction override for the sheet (view + editor); null = auto-detect from Hebrew letters.
+  // Remembered with its song id so navigating to another song falls back to auto-detect.
+  const [dirChoice, setDirChoice] = useState<{ songId: string; dir: 'rtl' | 'ltr' } | null>(null);
+  const dirOverride = dirChoice?.songId === songId ? dirChoice.dir : null;
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -40,10 +46,12 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
     );
   }
 
+  const sheetDir = dirOverride ?? (isRtlText(song.sheet ?? '') ? 'rtl' : 'ltr');
+  const toggleSheetDir = () => setDirChoice({ songId, dir: sheetDir === 'rtl' ? 'ltr' : 'rtl' });
   const playlists = getPlaylistsContainingSong(song.id, band.playlists);
   const adjacent = playlist && onSelectSong ? getAdjacentSongs(playlist, band.songs, song.id) : null;
 
-  const save = (fields: { name?: string; lyrics?: string; chords?: string; structure?: string }) => {
+  const save = (fields: { name?: string; lyrics?: string; chords?: string; structure?: string; sheet?: string }) => {
     track(
       apply(
         updateSong(band.id, song.id, {
@@ -51,6 +59,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
           lyrics: fields.lyrics ?? song.lyrics,
           chords: fields.chords ?? song.chords,
           structure: fields.structure ?? song.structure,
+          sheet: fields.sheet ?? song.sheet,
         }),
       ),
     );
@@ -83,7 +92,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
   // key remounts a field when its saved value changes; saving happens on blur.
   const textField = (
     label: string,
-    field: 'lyrics' | 'chords' | 'structure',
+    field: 'lyrics' | 'chords' | 'structure' | 'sheet',
     rows: number,
     mono = false,
   ) => (
@@ -93,6 +102,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
         key={`${field}-${song[field] ?? ''}`}
         rows={rows}
         className={mono ? 'mono' : undefined}
+        style={field === 'sheet' && sheetDir === 'rtl' ? { direction: 'rtl', textAlign: 'right' } : undefined}
         defaultValue={song[field] ?? ''}
         onBlur={(e) => e.target.value !== (song[field] ?? '') && save({ [field]: e.target.value })}
       />
@@ -144,8 +154,24 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
               />
             </label>
             {textField('מבנה', 'structure', 2)}
-            {textField('אקורדים', 'chords', 5, true)}
-            {textField('מילים', 'lyrics', 8)}
+            {textField('גיליון נגינה', 'sheet', 12, true)}
+            <button type="button" className="btn btn-secondary" onClick={toggleSheetDir}>
+              {sheetDir === 'rtl' ? 'כיוון: ימין לשמאל' : 'כיוון: שמאל לימין'} (החלף)
+            </button>
+            <p className="sheet-hint">
+              שורה ראשונה אקורדים, שנייה מילים, שלישית אקורדים וכן הלאה. שורה ריקה = אין אקורדים / אין מילים.
+            </p>
+            {!song.sheet && (song.chords || song.lyrics) && (
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => save({ sheet: legacyToSheet(song.chords, song.lyrics) })}
+              >
+                העתק אקורדים ומילים לגיליון
+              </button>
+            )}
+            {textField('אקורדים (ישן)', 'chords', 5, true)}
+            {textField('מילים (ישן)', 'lyrics', 8)}
           </div>
           <SaveIndicator status={saveStatus} />
         </>
@@ -153,9 +179,17 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
         <article className="song-reader">
           <h2 className="song-reader-title">{song.name}</h2>
           {song.structure && <p className="song-reader-structure">{song.structure}</p>}
-          {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
-          {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
-          {!song.structure && !song.chords && !song.lyrics && <p className="muted">אין עדיין מילים או אקורדים.</p>}
+          {song.sheet ? (
+            <ChordSheet key={song.id} sheet={song.sheet} dir={sheetDir} onToggleDir={toggleSheetDir} />
+          ) : (
+            <>
+              {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
+              {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
+            </>
+          )}
+          {!song.structure && !song.sheet && !song.chords && !song.lyrics && (
+            <p className="muted">אין עדיין מילים או אקורדים.</p>
+          )}
         </article>
       )}
       {canEdit && (

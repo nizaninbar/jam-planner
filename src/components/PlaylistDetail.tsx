@@ -133,48 +133,6 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
       </fieldset>
       <SaveIndicator status={saveStatus} />
 
-      <h3 className="section-title">אירועים ({linkedEvents.length})</h3>
-      {linkedEvents.length === 0 && <p className="muted">הפלייליסט לא מקושר לאף אירוע.</p>}
-      <ul className="item-list">
-        {linkedEvents.map((event) => (
-          <li key={event.id} className="order-row">
-            <span className="list-item">
-              <span className="list-item-title">{event.label}</span>
-              <span className="list-item-meta">{formatEventDate(event.date)}</span>
-            </span>
-            {canEdit && (
-              <button
-                type="button"
-                className="icon-btn danger"
-                onClick={() => apply(setEventPlaylist(band.id, event.id, null))}
-                aria-label="נתק מהאירוע"
-              >
-                <Icon name="close" />
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {canEdit && linkableEvents.length > 0 && (
-        <div className="inline-form">
-          <select
-            value=""
-            onChange={(e) => e.target.value && apply(setEventPlaylist(band.id, e.target.value, playlist.id))}
-          >
-            <option value="">קשר לאירוע…</option>
-            {linkableEvents.map((event) => {
-              const other = band.playlists.find((p) => p.id === event.playlistId);
-              return (
-                <option key={event.id} value={event.id}>
-                  {formatEventDate(event.date)} · {event.label}
-                  {other ? ` (מוחלף מ"${other.name}")` : ''}
-                </option>
-              );
-            })}
-          </select>
-        </div>
-      )}
-
       <div className="section-head">
         <h3 className="section-title">שירים ({songs.length})</h3>
         {canEdit && songs.length > 1 && (
@@ -250,11 +208,55 @@ export function PlaylistDetail({ band, playlistId, apply, canEdit, onOpenSong, o
               + צור והוסף
             </button>
           </div>
-
-          <button type="button" className="delete-btn" onClick={handleDelete}>
-            מחק פלייליסט
-          </button>
         </>
+      )}
+
+      <h3 className="section-title">אירועים ({linkedEvents.length})</h3>
+      {linkedEvents.length === 0 && <p className="muted">הפלייליסט לא מקושר לאף אירוע.</p>}
+      <ul className="item-list">
+        {linkedEvents.map((event) => (
+          <li key={event.id} className="order-row">
+            <span className="list-item">
+              <span className="list-item-title">{event.label}</span>
+              <span className="list-item-meta">{formatEventDate(event.date)}</span>
+            </span>
+            {canEdit && (
+              <button
+                type="button"
+                className="icon-btn danger"
+                onClick={() => apply(setEventPlaylist(band.id, event.id, null))}
+                aria-label="נתק מהאירוע"
+              >
+                <Icon name="close" />
+              </button>
+            )}
+          </li>
+        ))}
+      </ul>
+      {canEdit && linkableEvents.length > 0 && (
+        <div className="inline-form">
+          <select
+            value=""
+            onChange={(e) => e.target.value && apply(setEventPlaylist(band.id, e.target.value, playlist.id))}
+          >
+            <option value="">קשר לאירוע…</option>
+            {linkableEvents.map((event) => {
+              const other = band.playlists.find((p) => p.id === event.playlistId);
+              return (
+                <option key={event.id} value={event.id}>
+                  {formatEventDate(event.date)} · {event.label}
+                  {other ? ` (מוחלף מ"${other.name}")` : ''}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+      )}
+
+      {canEdit && (
+        <button type="button" className="delete-btn" onClick={handleDelete}>
+          מחק פלייליסט
+        </button>
       )}
     </div>
   );

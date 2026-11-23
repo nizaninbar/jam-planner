@@ -27,6 +27,7 @@ interface RawSong {
   lyrics: string | null;
   chords: string | null;
   structure: string | null;
+  sheet: string | null;
   song_links: { id: string; position: number; description: string; url: string }[];
 }
 
@@ -74,6 +75,7 @@ function mapBand(raw: RawBand): Band {
       lyrics: s.lyrics ?? undefined,
       chords: s.chords ?? undefined,
       structure: s.structure ?? undefined,
+      sheet: s.sheet ?? undefined,
       links: [...s.song_links]
         .sort((a, b) => a.position - b.position)
         .map((l) => ({ id: l.id, description: l.description, url: l.url })),
@@ -93,7 +95,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,start_time,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
+      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,start_time,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,sheet,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
     )
     .eq('id', bandId)
     .single();
@@ -193,6 +195,7 @@ export interface SongFields {
   lyrics?: string;
   chords?: string;
   structure?: string;
+  sheet?: string;
 }
 
 export async function createSong(
@@ -207,6 +210,7 @@ export async function createSong(
     lyrics: fields.lyrics || null,
     chords: fields.chords || null,
     structure: fields.structure || null,
+    sheet: fields.sheet || null,
   });
   if (error) fail('create song', error);
   return getBand(bandId);
@@ -220,6 +224,7 @@ export async function updateSong(bandId: string, songId: string, fields: SongFie
       lyrics: fields.lyrics || null,
       chords: fields.chords || null,
       structure: fields.structure || null,
+      sheet: fields.sheet || null,
     })
     .match({ id: songId, band_id: bandId });
   if (error) fail('update song', error);

@@ -260,6 +260,7 @@ function App() {
       <AppHeader
         bandId={band.id}
         bandName={band.name}
+        userName={band.members.find((m) => m.id === account.memberId)?.name}
         methods={auth.methods}
         onAttachGoogle={() => handleGoogle(attachGoogle)}
         onAttachPassword={async (username, password) => {
