@@ -211,9 +211,14 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
       {showTitle && <h2 className="song-reader-title">{song.name}</h2>}
       {song.structure && <p className="song-reader-structure">{song.structure}</p>}
       {song.sheet ? (
-        <ChordSheet key={song.id} sheet={song.sheet} dir={sheetDir} onToggleDir={toggleSheetDir} shift={shift} onShiftChange={setShift} />
+        <ChordSheet key={song.id} sheet={song.sheet} dir={sheetDir} onToggleDir={toggleSheetDir} shift={shift} onShiftChange={setShift} onFullscreen={showTitle ? () => setFullscreen(true) : undefined} />
       ) : (
         <>
+          {showTitle && (
+            <button type="button" className="sheet-reset" onClick={() => setFullscreen(true)}>
+              <Icon name="fullscreen" size={16} /> מסך מלא
+            </button>
+          )}
           {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
           {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
         </>
@@ -296,12 +301,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
           <SaveIndicator status={saveStatus} />
         </>
       ) : (
-        <>
-          {reader(true)}
-          <button type="button" className="btn btn-secondary" onClick={() => setFullscreen(true)}>
-            <Icon name="fullscreen" size={16} /> מסך מלא
-          </button>
-        </>
+        reader(true)
       )}
       {canEdit && (
         <button type="button" className="btn btn-secondary edit-toggle" onClick={() => setEditing((e) => !e)}>

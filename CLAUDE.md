@@ -24,11 +24,11 @@ Roles: only admins edit content; members edit only their own availability; viewe
 - `docs/GOALS.md` — product goals, Playlists and play-along sheet specs; read before proposing features.
 - `docs/UX_REVIEW.md` — UI/UX backlog (UX-01…UX-27) with checkboxes; tick items off as they land.
 - `docs/TECHNICAL.md`, `docs/BACKUP.md` — technical notes, backups.
-- Shipping: `/ship` (`scripts/ship.ps1`, GitHub account `nizaninbar`, squash-merges to `main`). It does NOT run SQL or deploy Supabase functions.
+- Shipping: `/ship-prod` (`scripts/ship.ps1`, GitHub account `nizaninbar`, squash-merges to `main`). It does NOT run SQL or deploy Supabase functions.
 - The app renders one band (`getBand('main-band')`) though the model supports many.
 
 ## Documentation is the memory between sessions
-Each feature is built in a separate session, so the docs are all the next session knows. **Before every `/ship` or commit, update the docs in the same PR:**
+Each feature is built in a separate session, so the docs are all the next session knows. **Before every `/ship-prod` or commit, update the docs in the same PR:**
 - `CLAUDE.md` — only the concise map (new files, data flow, roles). Put long detail in `docs/` and link it; don't let this file grow.
 - `docs/GOALS.md` — the feature's spec, decisions, Done/out-of-scope. `README.md` — user-facing Done list.
 - Topic docs (`AUTH.md`, `REMINDERS.md`, …) when touched; tick `UX_REVIEW.md` items.

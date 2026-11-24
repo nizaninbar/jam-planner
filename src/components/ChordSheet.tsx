@@ -1,4 +1,5 @@
 import { useState, type CSSProperties } from 'react';
+import { Icon } from './Icon';
 import { parseChordSheet, transposePairs } from '../utils/chordSheet';
 
 interface ChordSheetProps {
@@ -7,6 +8,8 @@ interface ChordSheetProps {
   onToggleDir: () => void;
   shift: number;
   onShiftChange: (shift: number) => void;
+  /** Shown as a button in the toolbar; omitted while already full screen. */
+  onFullscreen?: () => void;
 }
 
 const SIZE_KEY = 'sheetFontScale';
@@ -27,7 +30,7 @@ function loadScale(): number {
 }
 
 /** Play-along view: every chord line sits directly above its lyric line. */
-export function ChordSheet({ sheet, dir, onToggleDir, shift, onShiftChange: setShift }: ChordSheetProps) {
+export function ChordSheet({ sheet, dir, onToggleDir, shift, onShiftChange: setShift, onFullscreen }: ChordSheetProps) {
   // Transposition is a per-viewer, non-persisted setting (held by SongDetail): the saved sheet is never changed.
   // Font size is remembered per device (tablet vs phone), unlike transposition.
   const [scale, setScale] = useState(loadScale);
@@ -74,6 +77,11 @@ export function ChordSheet({ sheet, dir, onToggleDir, shift, onShiftChange: setS
             A+
           </button>
         </div>
+        {onFullscreen && (
+          <button type="button" className="sheet-reset" onClick={onFullscreen}>
+            <Icon name="fullscreen" size={16} /> מסך מלא
+          </button>
+        )}
         <button type="button" className="sheet-reset" onClick={onToggleDir}>
           {dir === 'rtl' ? 'כיוון: ימין לשמאל' : 'כיוון: שמאל לימין'}
         </button>

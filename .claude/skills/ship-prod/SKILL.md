@@ -1,9 +1,12 @@
 ---
-name: ship
-description: Ship the current changes to main as the private GitHub account (nizaninbar) - runs build and lint, commits, pushes a branch, opens a PR and squash-merges it. Use when the user says /ship or asks to ship, push and merge, or deploy their work.
+name: ship-prod
+description: Ship the current changes all the way to production - first checks that the docs are up to date for other sessions, then runs build and lint, commits, pushes a branch, opens a PR and squash-merges it to main (GitHub Pages deploys from main), as the private GitHub account (nizaninbar). Use when the user says /ship-prod or asks to ship, push and merge, deploy, or push to prod.
 ---
 
-# Ship
+# Ship to prod
+
+Named `ship-prod` because Claude Code has a built-in `/ship` (review-only: no commit, push or merge)
+that shadows a project skill called `ship`.
 
 Runs `scripts/ship.ps1`, which switches `gh` to the `nizaninbar` account, runs `npm run build` and
 `npm run lint`, branches off `main` if needed, commits pending changes, pushes, opens a PR and
