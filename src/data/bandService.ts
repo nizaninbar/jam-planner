@@ -46,6 +46,7 @@ interface RawBand {
   availability: RawAvailability[];
   songs: RawSong[];
   playlists: RawPlaylist[];
+  band_links: { id: string; position: number; description: string; url: string }[];
 }
 
 function mapBand(raw: RawBand): Band {
@@ -88,6 +89,9 @@ function mapBand(raw: RawBand): Band {
         .sort((a, b) => a.position - b.position)
         .map((e) => ({ songId: e.song_id, position: e.position })),
     })),
+    links: [...raw.band_links]
+      .sort((a, b) => a.position - b.position)
+      .map((l) => ({ id: l.id, description: l.description, url: l.url })),
   };
 }
 
@@ -95,7 +99,7 @@ export async function getBand(bandId: string): Promise<Band> {
   const { data, error } = await supabase
     .from('bands')
     .select(
-      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,start_time,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,sheet,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position))',
+      'id, name, members!members_band_id_fkey(id,name), gigs!gigs_band_id_fkey(id,date,label,type,location,start_time,playlist_id,remind_at,reminder_sent_at), availability(member_id,date,status), songs(id,name,lyrics,chords,structure,sheet,song_links(id,position,description,url)), playlists!playlists_band_id_fkey(id,name,description,playlist_songs(song_id,position)), band_links(id,position,description,url)',
     )
     .eq('id', bandId)
     .single();
@@ -254,6 +258,20 @@ export async function addSongLink(
 export async function deleteSongLink(bandId: string, linkId: string): Promise<Band> {
   const { error } = await supabase.from('song_links').delete().eq('id', linkId);
   if (error) fail('delete link', error);
+  return getBand(bandId);
+}
+
+export async function addBandLink(bandId: string, position: number, description: string, url: string): Promise<Band> {
+  const { error } = await supabase
+    .from('band_links')
+    .insert({ id: newId(), band_id: bandId, position, description, url });
+  if (error) fail('add band link', error);
+  return getBand(bandId);
+}
+
+export async function deleteBandLink(bandId: string, linkId: string): Promise<Band> {
+  const { error } = await supabase.from('band_links').delete().eq('id', linkId);
+  if (error) fail('delete band link', error);
   return getBand(bandId);
 }
 

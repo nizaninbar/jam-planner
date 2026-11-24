@@ -32,6 +32,7 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Play-along view: a song's chords shown above its lyrics (Hebrew right-to-left supported), with chord transposition (run `supabase/migrate_11_add_song_sheet.sql`)
 * Upcoming events tab: all events from today onward, grouped by month, tap to open the day
 * Calmer look: single indigo accent, true-black dark mode, muted vinyl logo (no pick); swipe-between-tabs removed and A−/A+ font buttons added to the play-along sheet
+* Band-wide links (name + URL) in a collapsible strip under the header, admins edit (run `supabase/migrate_12_band_links.sql`)
 * Full-screen song mode for playing: prev/next song, transpose, font size, screen stays awake
 * The header greets the signed-in member by name
 

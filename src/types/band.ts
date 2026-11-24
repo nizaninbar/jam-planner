@@ -74,4 +74,6 @@ export interface Band {
   availability: Availability[];
   songs: Song[];
   playlists: Playlist[];
+  /** Band-wide links (shared drive, group chat, ...), shown in the header strip. */
+  links: Link[];
 }

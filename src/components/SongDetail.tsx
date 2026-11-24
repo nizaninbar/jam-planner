@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { addSongLink, deleteSong, deleteSongLink, updateSong } from '../data/bandService';
 import { useSaveStatus } from '../hooks/useSaveStatus';
 import type { Band, Playlist } from '../types/band';
-import { getAdjacentSongs, getPlaylistsContainingSong, isHttpUrl } from '../utils/playlists';
+import { getAdjacentSongs, getPlaylistsContainingSong } from '../utils/playlists';
 import { isRtlText, legacyToSheet } from '../utils/chordSheet';
 import { ChordSheet } from './ChordSheet';
 import { Icon } from './Icon';
+import { LinkList } from './LinkList';
 import { SaveIndicator } from './SaveIndicator';
 
 interface SongDetailProps {
@@ -21,9 +22,6 @@ interface SongDetailProps {
 
 export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSong, onOpenPlaylist, onBack }: SongDetailProps) {
   const song = band.songs.find((s) => s.id === songId);
-  const [linkDescription, setLinkDescription] = useState('');
-  const [linkUrl, setLinkUrl] = useState('');
-  const [linkError, setLinkError] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
   const [saveStatus, track] = useSaveStatus();
   // Manual direction override for the sheet (view + editor); null = auto-detect from Hebrew letters.
@@ -39,9 +37,6 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
     setShownSongId(songId);
     setShift(0);
     setEditing(false);
-    setLinkDescription('');
-    setLinkUrl('');
-    setLinkError(null);
   }
 
   // Full-screen play mode: only the song, prev/next, and the sheet controls.
@@ -137,19 +132,6 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
         }),
       ),
     );
-  };
-
-  const handleAddLink = () => {
-    const url = linkUrl.trim();
-    if (!isHttpUrl(url)) {
-      setLinkError('הכתובת חייבת להתחיל ב-http:// או https://');
-      return;
-    }
-    setLinkError(null);
-    const position = song.links.length;
-    apply(addSongLink(band.id, song.id, position, linkDescription.trim(), url));
-    setLinkDescription('');
-    setLinkUrl('');
   };
 
   const handleDelete = () => {
@@ -319,47 +301,13 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
 
       <h3 className="section-title">קישורים</h3>
       {song.links.length === 0 && <p className="muted">אין קישורים.</p>}
-      <ul className="item-list">
-        {song.links.map((link) => (
-          <li key={link.id} className="order-row">
-            <a className="list-item" href={link.url} target="_blank" rel="noopener noreferrer">
-              <span className="list-item-title">{link.description || link.url}</span>
-              {link.description && <span className="list-item-meta link-url">{link.url}</span>}
-            </a>
-            {canEdit && (
-              <button
-                type="button"
-                className="icon-btn danger"
-                onClick={() => apply(deleteSongLink(band.id, link.id))}
-                aria-label="מחק קישור"
-              >
-                <Icon name="close" />
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
-      {canEdit && (
-        <div className="form-stack">
-          <input
-            type="text"
-            placeholder="תיאור (למשל: הקלטת חזרה)"
-            value={linkDescription}
-            onChange={(e) => setLinkDescription(e.target.value)}
-          />
-          <input
-            type="url"
-            dir="ltr"
-            placeholder="https://…"
-            value={linkUrl}
-            onChange={(e) => setLinkUrl(e.target.value)}
-          />
-          {linkError && <p className="error-text">{linkError}</p>}
-          <button type="button" className="toggle-btn toggle-available" onClick={handleAddLink}>
-            + הוסף קישור
-          </button>
-        </div>
-      )}
+      <LinkList
+        key={song.id}
+        links={song.links}
+        canEdit={canEdit}
+        onAdd={(description, url) => apply(addSongLink(band.id, song.id, song.links.length, description, url))}
+        onDelete={(linkId) => apply(deleteSongLink(band.id, linkId))}
+      />
 
       <h3 className="section-title">מופיע בפלייליסטים</h3>
       {playlists.length === 0 && <p className="muted">השיר לא נמצא באף פלייליסט.</p>}

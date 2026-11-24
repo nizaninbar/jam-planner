@@ -10,6 +10,7 @@ is the first feature; more are added one at a time.
 | --- | --- |
 | Availability calendar (who's free, gigs, rehearsals) | Done - unchanged |
 | Playlists (songs, links, ordered lists, event link) | Done |
+| Band-wide links (header strip) | Done |
 | Anything beyond that | TBD |
 
 ## Audience
@@ -121,6 +122,17 @@ event's day editor, show/create/link that event's playlist. Mobile-first and RTL
   per viewer and not saved; the stored sheet is never changed. Chords keep their column so they stay
   above their words. Sharps/flats follow the sheet's own accidentals (neutral guitar spelling
   otherwise). Logic: `transposePairs` in `src/utils/chordSheet.ts`.
+
+### Band-wide links — Done
+- Same shape as song links (description + http(s) URL, opens in a new tab) but for the whole band:
+  shared drive, group chat, rehearsal-room site. Table `band_links` (`migrate_12_band_links.sql`),
+  `Band.links`, `addBandLink` / `deleteBandLink` in `bandService.ts`.
+- **Placement**: a collapsible "🔗 קישורים" strip (`BandLinks.tsx`) right under the header, on every tab,
+  collapsed by default. Chosen over a new nav tab (mobile nav is already 4–5 tabs) and over the
+  settings menu (too hidden for something the whole band uses). Hidden when empty for non-admins.
+- **Access**: everyone in the band reads; admins add/delete (RLS + `canEditContent`). No reordering
+  or editing in place (delete and re-add), like song links.
+- The link list + add form is the shared `LinkList.tsx`, also used by `SongDetail`.
 
 ### Out of scope for v1
 Audio upload/playback, per-member parts, lyrics import, a saved per-song key.

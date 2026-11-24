@@ -144,6 +144,34 @@ body {
   border-radius: 20px;
 }
 
+.band-links {
+  margin-bottom: 16px;
+  background: var(--bg-main);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+}
+
+.band-links-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 44px;
+  padding: 8px 16px;
+  background: none;
+  border: 0;
+  color: inherit;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.band-links-panel {
+  max-height: 50vh;
+  overflow-y: auto;
+  padding: 0 12px 12px;
+}
+
 .app-brand {
   display: inline-flex;
   align-items: center;
