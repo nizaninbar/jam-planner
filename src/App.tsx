@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
+import { BandLinks } from './components/BandLinks';
 import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
 import { CalendarSkeleton } from './components/CalendarSkeleton';
@@ -256,6 +257,7 @@ function App() {
         }}
         onSignOut={handleSignOut}
       />
+      <BandLinks band={band} canEdit={editContent} apply={apply} />
       <NavTabs
         active={view.section}
         showAdmin={canManageAccess(account)}
