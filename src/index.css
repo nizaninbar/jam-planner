@@ -1,47 +1,46 @@
 /* Semantic tokens. Dark is the default; the light values are below. An inline script in index.html sets data-theme before first paint. */
 :root {
-  --bg-main: #1a1024;
-  --bg-card: #26172f;
-  --bg-hover: #34213f;
-  --bg-hover-strong: #44294f;
-  --text-main: #fff6ec;
-  --text-muted: #c9b8d4;
-  --border-color: #4d3359;
-  --shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-  --overlay: rgba(10, 4, 16, 0.65);
-  --focus-ring: #ffc93c;
+  --bg-main: #000000;
+  --bg-card: #0f0f12;
+  --bg-hover: #1a1a1f;
+  --bg-hover-strong: #26262d;
+  --text-main: #f2f2f5;
+  --text-muted: #9a9aa5;
+  --border-color: #26262c;
+  --shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --overlay: rgba(0, 0, 0, 0.7);
+  --focus-ring: #a5a6ff;
 
-  /* Sunset palette */
-  --accent-1: #ff4f9a;
-  --accent-2: #ff8a3d;
-  --accent-3: #ffc93c;
-  --accent-4: #2ec4b6;
-  --accent-5: #9b6bff;
+  /* One accent (indigo); the rest are muted so status colours stay readable without shouting. */
+  --accent-1: #8b8cff;
+  --accent-2: #a5a6ff;
+  --accent-3: #d9b25c;
+  --accent-4: #4fb596;
+  --accent-5: #62a8d8;
 
-  /* Sticker cards: an ink outline and a hard offset shadow. */
-  --sticker-border: #0d0714;
-  --sticker-shadow: 5px 5px 0 var(--accent-1);
-  --header-gradient: linear-gradient(260deg, #7a2cc4 0%, #d6307f 55%, #ff8a3d 100%);
-  --on-header: #ffffff;
-  --on-accent: #1a0d24;
-  --sunburst: rgba(255, 79, 154, 0.05);
+  /* Cards: a quiet outline and a soft shadow. */
+  --sticker-border: var(--border-color);
+  --sticker-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+  --header-gradient: linear-gradient(260deg, #1d1d3a 0%, #14141a 100%);
+  --on-header: #f2f2f5;
+  --on-accent: #0b0b1a;
 
   --status-ok: var(--accent-4);
-  --status-missing: #ff4d5e;
+  --status-missing: #e5636f;
   --status-event: var(--accent-3);
   --status-rehearsal: var(--accent-5);
 
   /* Readable text colours for each status, and soft fills. */
-  --status-ok-text: #4fe3d3;
-  --status-missing-text: #ff8f9b;
-  --status-event-text: #ffd35c;
-  --status-rehearsal-text: #c2adff;
-  --tint-ok: rgba(46, 196, 182, 0.18);
-  --tint-missing: rgba(255, 77, 94, 0.18);
-  --tint-missing-faint: rgba(255, 77, 94, 0.07);
-  --tint-missing-border: rgba(255, 77, 94, 0.45);
-  --tint-event: rgba(255, 201, 60, 0.14);
-  --tint-rehearsal: rgba(155, 107, 255, 0.16);
+  --status-ok-text: #6fd1b2;
+  --status-missing-text: #ff949e;
+  --status-event-text: #e8c97f;
+  --status-rehearsal-text: #8cc6ee;
+  --tint-ok: rgba(79, 181, 150, 0.16);
+  --tint-missing: rgba(229, 99, 111, 0.16);
+  --tint-missing-faint: rgba(229, 99, 111, 0.07);
+  --tint-missing-border: rgba(229, 99, 111, 0.45);
+  --tint-event: rgba(217, 178, 92, 0.14);
+  --tint-rehearsal: rgba(98, 168, 216, 0.16);
 
   /* Old names, kept as aliases. */
   --accent-green: var(--status-ok);
@@ -53,6 +52,7 @@
 }
 
 :root[data-theme='light'] {
+  /* The original warm cream surfaces, with calmer accents. */
   --bg-main: #fdf0d8;
   --bg-card: #fffaf0;
   --bg-hover: #f7e6c6;
@@ -64,30 +64,28 @@
   --overlay: rgba(43, 24, 56, 0.5);
   --focus-ring: #5a30c0;
 
-  --accent-1: #e0206f;
-  --accent-2: #f06a12;
-  --accent-3: #d9a400;
-  --accent-4: #0e9f90;
-  --accent-5: #7a4de0;
+  --accent-1: #6a4cc4;
+  --accent-2: #5a3eb0;
+  --accent-3: #9a6f10;
+  --accent-4: #1f8a6c;
+  --accent-5: #2a7bb0;
 
-  --sticker-border: #2b1838;
+  --sticker-shadow: 0 1px 6px rgba(60, 30, 10, 0.1);
+  --header-gradient: linear-gradient(260deg, #7a5cd0 0%, #5a3eb0 100%);
   --on-accent: #ffffff;
-  --sticker-shadow: 5px 5px 0 var(--accent-2);
-  --header-gradient: linear-gradient(260deg, #8a3fd6 0%, #e0206f 55%, #f58a1f 100%);
-  --sunburst: rgba(240, 106, 18, 0.1);
 
-  --status-missing: #d3122a;
-  --status-event: #ad7f00;
-  --status-ok-text: #085a52;
-  --status-missing-text: #b3001b;
+  --status-missing: #c4313f;
+  --status-event: #9a6f10;
+  --status-ok-text: #146b53;
+  --status-missing-text: #a8202e;
   --status-event-text: #7a5800;
-  --status-rehearsal-text: #5a30c0;
-  --tint-ok: rgba(14, 159, 144, 0.16);
-  --tint-missing: rgba(211, 18, 42, 0.12);
-  --tint-missing-faint: rgba(211, 18, 42, 0.06);
-  --tint-missing-border: rgba(211, 18, 42, 0.4);
-  --tint-event: rgba(217, 164, 0, 0.2);
-  --tint-rehearsal: rgba(122, 77, 224, 0.12);
+  --status-rehearsal-text: #1f6190;
+  --tint-ok: rgba(31, 138, 108, 0.14);
+  --tint-missing: rgba(196, 49, 63, 0.11);
+  --tint-missing-faint: rgba(196, 49, 63, 0.05);
+  --tint-missing-border: rgba(196, 49, 63, 0.4);
+  --tint-event: rgba(154, 111, 16, 0.16);
+  --tint-rehearsal: rgba(42, 123, 176, 0.12);
   color-scheme: light;
 }
 
@@ -103,9 +101,6 @@ html {
 body {
   font-family: 'Rubik', sans-serif;
   background-color: var(--bg-main);
-  /* A faint sunburst fanning out from above the page. */
-  background-image: repeating-conic-gradient(from 0deg at 50% -8%, var(--sunburst) 0deg 7.5deg, transparent 7.5deg 15deg);
-  background-attachment: fixed;
   color: var(--text-main);
   margin: 0;
   padding: 40px 20px;
@@ -130,7 +125,7 @@ body {
   max-width: 1000px;
   width: 100%;
   background-color: var(--bg-card);
-  border: 2px solid var(--sticker-border);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 40px;
   box-shadow: var(--sticker-shadow);
@@ -145,9 +140,8 @@ body {
   padding: 10px 16px;
   background: var(--header-gradient);
   color: var(--on-header, #fff);
-  border: 2px solid var(--sticker-border);
+  border: 1px solid var(--border-color);
   border-radius: 20px;
-  box-shadow: 3px 3px 0 var(--sticker-border);
 }
 
 .app-brand {
@@ -159,7 +153,6 @@ body {
   font-weight: 400;
   letter-spacing: 0.5px;
   white-space: nowrap;
-  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.25);
 }
 
 .app-logo {
@@ -467,7 +460,7 @@ body {
   width: 90%;
   max-height: 80vh;
   overflow-y: auto;
-  border: 2px solid var(--sticker-border);
+  border: 1px solid var(--border-color);
   box-shadow: var(--sticker-shadow);
 }
 
@@ -580,10 +573,11 @@ body {
 }
 
 .toast-region {
+  /* Above the full-screen song overlay (200) so errors stay visible. */
   position: fixed;
   inset-inline: 16px;
   bottom: calc(16px + env(safe-area-inset-bottom));
-  z-index: 100;
+  z-index: 300;
   display: flex;
   justify-content: center;
   pointer-events: none;
@@ -690,7 +684,7 @@ body {
 
   .calendar-container,
   .page-container {
-    box-shadow: 3px 3px 0 var(--accent-1);
+    box-shadow: var(--sticker-shadow);
   }
 
   .band-pill {
@@ -809,13 +803,12 @@ body {
 .nav-tab-active:hover {
   background: var(--accent-1);
   color: var(--on-accent);
-  border-color: var(--sticker-border);
-  box-shadow: 2px 2px 0 var(--sticker-border);
+  border-color: transparent;
 }
 
 .page-container {
   background-color: var(--bg-card);
-  border: 2px solid var(--sticker-border);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 24px;
   box-shadow: var(--sticker-shadow);
@@ -1146,7 +1139,7 @@ body {
   max-width: 420px;
   width: 100%;
   background: var(--bg-card);
-  border: 2px solid var(--sticker-border);
+  border: 1px solid var(--border-color);
   box-shadow: var(--sticker-shadow);
   border-radius: 16px;
   padding: 24px;
@@ -1258,7 +1251,7 @@ body {
 .btn-primary {
   background: var(--accent-1);
   color: var(--on-accent);
-  border-color: var(--sticker-border);
+  border-color: transparent;
 }
 
 .btn-secondary {
@@ -1446,6 +1439,9 @@ body {
 
 /* Play-along sheet: monospace so chords stay above the syllable they belong to. */
 .chord-sheet {
+  /* Pinch-zoom of the page is off here; the A-/A+ buttons resize the sheet instead. */
+  touch-action: pan-x pan-y;
+  overscroll-behavior-x: contain;
   overflow-x: auto;
   padding-bottom: 4px;
 }
@@ -1463,14 +1459,15 @@ body {
 }
 
 .chord-line {
-  color: var(--accent-3);
+  color: var(--accent-1);
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: calc(var(--sheet-font-size, 1.05rem));
   line-height: 1.5;
 }
 
 .lyric-line {
-  font-size: 1.1rem;
+  /* Same size as the chord line: both are monospace and chords are placed by column. */
+  font-size: var(--sheet-font-size, 1.05rem);
   line-height: 1.5;
 }
 
@@ -1542,8 +1539,7 @@ body {
 @media (prefers-reduced-motion: no-preference) {
   .btn,
   .nav-tab,
-  .today-chip,
-  .app-logo {
+  .today-chip {
     transition: transform 0.15s;
   }
 }
@@ -1551,15 +1547,7 @@ body {
 @media (prefers-reduced-motion: no-preference) and (hover: hover) {
   .btn:hover,
   .today-chip:hover {
-    transform: translate(-1px, -2px) rotate(-1deg);
-  }
-
-  .nav-tab:not(.nav-tab-active):hover {
-    transform: translateY(-2px);
-  }
-
-  .app-brand:hover .app-logo {
-    transform: rotate(20deg) scale(1.08);
+    transform: translateY(-1px);
   }
 }
 
@@ -1582,4 +1570,57 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* Song view: no edge-swipe/pull chaining that could navigate away mid-song. */
+html:has(.chord-sheet),
+html:has(.chord-sheet) body {
+  overscroll-behavior-x: none;
+}
+
+.sheet-size {
+  min-width: 3.2em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Full-screen play mode: covers the app header and tabs; one slim bar plus the scrolling sheet. */
+.song-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-main);
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
+}
+
+.fs-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.fs-bar .song-nav-label {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.fs-body {
+  flex: 1;
+  overflow-y: auto;
+  /* No pull-to-refresh / scroll chaining mid-song. */
+  overscroll-behavior-y: contain;
+  padding: 8px 16px 32px;
+}
+
+.song-fullscreen .sheet-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0 -16px 8px;
+  padding: 6px 16px;
+  background: var(--bg-main);
 }

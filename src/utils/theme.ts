@@ -1,7 +1,7 @@
 export type Theme = 'light' | 'dark';
 
 const STORAGE_KEY = 'theme';
-const THEME_COLORS: Record<Theme, string> = { dark: '#1a1024', light: '#fdf0d8' };
+const THEME_COLORS: Record<Theme, string> = { dark: '#000000', light: '#fdf0d8' };
 
 export function isTheme(value: unknown): value is Theme {
   return value === 'light' || value === 'dark';

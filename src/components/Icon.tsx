@@ -13,7 +13,8 @@ export type IconName =
   | 'settings'
   | 'logout'
   | 'chevron-right'
-  | 'chevron-left';
+  | 'chevron-left'
+  | 'fullscreen';
 
 // One consistent set of line icons (emoji look different on every OS). Decorative: the parent button
 // carries the aria-label.
@@ -33,6 +34,7 @@ const PATHS: Record<IconName, string> = {
   logout: 'M8 3H4v14h4M12 6l4 4-4 4M16 10H8',
   'chevron-right': 'M7 3l7 7-7 7',
   'chevron-left': 'M13 3l-7 7 7 7',
+  fullscreen: 'M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4',
 };
 
 export function Icon({ name, size = 20 }: { name: IconName; size?: number }) {

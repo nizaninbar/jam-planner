@@ -4,9 +4,8 @@ import { Calendar } from './components/Calendar';
 import { DayEditorModal } from './components/DayEditorModal';
 import { CalendarSkeleton } from './components/CalendarSkeleton';
 import { MembersAdminView } from './components/MembersAdminView';
-import { getSections, NavTabs, type Section } from './components/NavTabs';
+import { NavTabs, type Section } from './components/NavTabs';
 import { useHistoryNav } from './hooks/useHistoryNav';
-import { useSwipeNav } from './hooks/useSwipeNav';
 import { NoAccessScreen } from './components/NoAccessScreen';
 import { Toast } from './components/Toast';
 import { UpcomingView } from './components/UpcomingView';
@@ -137,7 +136,6 @@ function App() {
   };
 
   const ready = auth.status === 'ready' && band !== null;
-  const showAdmin = auth.status === 'ready' && canManageAccess(auth.account);
   const selectedIso = selectedDate ? toIsoDate(selectedDate) : null;
 
   // Phone back gesture steps through in-app views and the open day instead of closing the app.
@@ -148,18 +146,6 @@ function App() {
       setSelectedDate(nav.date ? parseIsoDate(nav.date) : null);
     },
     ready,
-  );
-
-  // Horizontal swipe moves between the top-level tabs (RTL: swiping right goes to the next tab).
-  useSwipeNav(
-    (direction) => {
-      const sections = getSections(showAdmin);
-      const next = sections[sections.indexOf(view.section) + direction];
-      if (next) {
-        setView({ section: next });
-      }
-    },
-    ready && !selectedDate,
   );
 
   if (error) {
@@ -288,8 +274,8 @@ function App() {
       {view.section === 'admin' && canManageAccess(account) && <MembersAdminView band={band} />}
       {view.section === 'playlists' &&
         (view.songId ? (
+          // No key: SongDetail must survive prev/next so full-screen mode stays on; it resets itself per song.
           <SongDetail
-            key={view.songId}
             band={band}
             songId={view.songId}
             apply={apply}

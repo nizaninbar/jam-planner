@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { addSongLink, deleteSong, deleteSongLink, updateSong } from '../data/bandService';
 import { useSaveStatus } from '../hooks/useSaveStatus';
 import type { Band, Playlist } from '../types/band';
@@ -31,9 +31,83 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
   const [dirChoice, setDirChoice] = useState<{ songId: string; dir: 'rtl' | 'ltr' } | null>(null);
   const dirOverride = dirChoice?.songId === songId ? dirChoice.dir : null;
 
+  // Reset per-song UI state when moving to another song (the component itself stays mounted).
+  const [shownSongId, setShownSongId] = useState(songId);
+  // Transposition lives here (not in ChordSheet) so entering/leaving full screen, which remounts the sheet, keeps it.
+  const [shift, setShift] = useState(0);
+  if (shownSongId !== songId) {
+    setShownSongId(songId);
+    setShift(0);
+    setEditing(false);
+    setLinkDescription('');
+    setLinkUrl('');
+    setLinkError(null);
+  }
+
+  // Full-screen play mode: only the song, prev/next, and the sheet controls.
+  const [fullscreen, setFullscreen] = useState(false);
+  const fsBodyRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
     window.scrollTo(0, 0);
+    fsBodyRef.current?.scrollTo(0, 0);
   }, [songId]);
+
+  // Also ends if the song vanishes underneath (deleted elsewhere), so fullscreen and the wake lock don't linger.
+  const fullscreenActive = fullscreen && !!song;
+  useEffect(() => {
+    if (!fullscreenActive) {
+      return;
+    }
+    // Hide the browser chrome where supported (not on iPhone Safari; the overlay still fills the page),
+    // and keep the screen awake while playing. Both are best-effort.
+    let cancelled = false;
+    document.documentElement
+      .requestFullscreen?.()
+      .then(() => {
+        // Closed before the browser finished entering fullscreen: leave again.
+        if (cancelled && document.fullscreenElement) {
+          document.exitFullscreen().catch(() => {});
+        }
+      })
+      .catch(() => {});
+    let lock: WakeLockSentinel | null = null;
+    const acquireLock = () => {
+      navigator.wakeLock
+        ?.request('screen')
+        .then((l) => {
+          if (cancelled) {
+            l.release().catch(() => {});
+          } else {
+            lock?.release().catch(() => {});
+            lock = l;
+          }
+        })
+        .catch(() => {});
+    };
+    acquireLock();
+    // The browser drops the lock when the tab is hidden (phone locked, app switched); take it again on return.
+    const onVisible = () => document.visibilityState === 'visible' && acquireLock();
+    document.addEventListener('visibilitychange', onVisible);
+    const onFullscreenChange = () => {
+      if (!document.fullscreenElement) {
+        setFullscreen(false);
+      }
+    };
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setFullscreen(false);
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      cancelled = true;
+      document.removeEventListener('visibilitychange', onVisible);
+      document.removeEventListener('fullscreenchange', onFullscreenChange);
+      document.removeEventListener('keydown', onKey);
+      if (document.fullscreenElement) {
+        document.exitFullscreen().catch(() => {});
+      }
+      lock?.release().catch(() => {});
+    };
+  }, [fullscreenActive]);
 
   if (!song) {
     return (
@@ -99,7 +173,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
     <label>
       {label}
       <textarea
-        key={`${field}-${song[field] ?? ''}`}
+        key={`${song.id}-${field}-${song[field] ?? ''}`}
         rows={rows}
         className={mono ? 'mono' : undefined}
         style={field === 'sheet' && sheetDir === 'rtl' ? { direction: 'rtl', textAlign: 'right' } : undefined}
@@ -109,6 +183,68 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
     </label>
   );
 
+  const prevButton = adjacent && onSelectSong && (
+    <button
+      type="button"
+      className="icon-btn"
+      disabled={!adjacent.prev}
+      onClick={() => adjacent.prev && onSelectSong(adjacent.prev.id)}
+      aria-label="השיר הקודם"
+    >
+      <Icon name="chevron-right" />
+    </button>
+  );
+  const nextButton = adjacent && onSelectSong && (
+    <button
+      type="button"
+      className="icon-btn"
+      disabled={!adjacent.next}
+      onClick={() => adjacent.next && onSelectSong(adjacent.next.id)}
+      aria-label="השיר הבא"
+    >
+      <Icon name="chevron-left" />
+    </button>
+  );
+
+  const reader = (showTitle: boolean) => (
+    <article className="song-reader">
+      {showTitle && <h2 className="song-reader-title">{song.name}</h2>}
+      {song.structure && <p className="song-reader-structure">{song.structure}</p>}
+      {song.sheet ? (
+        <ChordSheet key={song.id} sheet={song.sheet} dir={sheetDir} onToggleDir={toggleSheetDir} shift={shift} onShiftChange={setShift} />
+      ) : (
+        <>
+          {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
+          {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
+        </>
+      )}
+      {!song.structure && !song.sheet && !song.chords && !song.lyrics && (
+        <p className="muted">אין עדיין מילים או אקורדים.</p>
+      )}
+    </article>
+  );
+
+  if (fullscreen) {
+    return (
+      <div className="song-fullscreen" role="dialog" aria-modal="true" aria-label={song.name}>
+        <div className="fs-bar">
+          <button type="button" className="icon-btn" onClick={() => setFullscreen(false)} aria-label="יציאה ממסך מלא" autoFocus>
+            <Icon name="close" />
+          </button>
+          {prevButton}
+          <span className="song-nav-label">
+            {song.name}
+            {adjacent && ` · ${adjacent.index + 1}/${adjacent.total}`}
+          </span>
+          {nextButton}
+        </div>
+        <div className="fs-body" ref={fsBodyRef}>
+          {reader(false)}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="page-container">
       <button type="button" className="back-btn" onClick={onBack}>
@@ -117,27 +253,11 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
 
       {playlist && adjacent && onSelectSong && (
         <nav className="song-nav" aria-label="ניווט בפלייליסט">
-          <button
-            type="button"
-            className="icon-btn"
-            disabled={!adjacent.prev}
-            onClick={() => adjacent.prev && onSelectSong(adjacent.prev.id)}
-            aria-label="השיר הקודם"
-          >
-            <Icon name="chevron-right" />
-          </button>
+          {prevButton}
           <span className="song-nav-label">
             {adjacent.index + 1} / {adjacent.total} · {playlist.name}
           </span>
-          <button
-            type="button"
-            className="icon-btn"
-            disabled={!adjacent.next}
-            onClick={() => adjacent.next && onSelectSong(adjacent.next.id)}
-            aria-label="השיר הבא"
-          >
-            <Icon name="chevron-left" />
-          </button>
+          {nextButton}
         </nav>
       )}
 
@@ -147,7 +267,7 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
             <label>
               שם
               <input
-                key={`n-${song.name}`}
+                key={`n-${song.id}-${song.name}`}
                 type="text"
                 defaultValue={song.name}
                 onBlur={(e) => e.target.value.trim() && e.target.value !== song.name && save({ name: e.target.value.trim() })}
@@ -176,21 +296,12 @@ export function SongDetail({ band, songId, apply, canEdit, playlist, onSelectSon
           <SaveIndicator status={saveStatus} />
         </>
       ) : (
-        <article className="song-reader">
-          <h2 className="song-reader-title">{song.name}</h2>
-          {song.structure && <p className="song-reader-structure">{song.structure}</p>}
-          {song.sheet ? (
-            <ChordSheet key={song.id} sheet={song.sheet} dir={sheetDir} onToggleDir={toggleSheetDir} />
-          ) : (
-            <>
-              {song.chords && <pre className="song-reader-chords">{song.chords}</pre>}
-              {song.lyrics && <p className="song-reader-lyrics">{song.lyrics}</p>}
-            </>
-          )}
-          {!song.structure && !song.sheet && !song.chords && !song.lyrics && (
-            <p className="muted">אין עדיין מילים או אקורדים.</p>
-          )}
-        </article>
+        <>
+          {reader(true)}
+          <button type="button" className="btn btn-secondary" onClick={() => setFullscreen(true)}>
+            <Icon name="fullscreen" size={16} /> מסך מלא
+          </button>
+        </>
       )}
       {canEdit && (
         <button type="button" className="btn btn-secondary edit-toggle" onClick={() => setEditing((e) => !e)}>
