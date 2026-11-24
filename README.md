@@ -31,6 +31,8 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links
 * Play-along view: a song's chords shown above its lyrics (Hebrew right-to-left supported), with chord transposition (run `supabase/migrate_11_add_song_sheet.sql`)
 * Upcoming events tab: all events from today onward, grouped by month, tap to open the day
+* Calmer look: single indigo accent, true-black dark mode, muted vinyl logo (no pick); swipe-between-tabs removed and A−/A+ font buttons added to the play-along sheet
+* Full-screen song mode for playing: prev/next song, transpose, font size, screen stays awake
 * The header greets the signed-in member by name
 
 * Access control: personal invite links, optional username/password or Google sign-in (see `docs/AUTH.md`), and admin / member / viewer roles enforced by Supabase RLS (see below)

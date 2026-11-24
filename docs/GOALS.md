@@ -46,6 +46,24 @@ confirmation, setlist extras, a recordings library.
   (type, date, time, location, playlist); tapping one opens that day in the calendar. Chose a tab
   over a "next event" card above the calendar so the whole schedule is visible, not just one event.
   No schema change.
+- Calmer look (2026-11-24): the groovy sunset/sticker style was too loud. Now one indigo accent on
+  neutral surfaces, 1px borders and soft shadows, no sunburst, a subtle indigo header gradient (kept
+  a little character on purpose). Dark mode is true black (OLED, good on a stage tablet); light is a
+  warm cream (the original surfaces, calmer accent). Status colours (ok/missing/event/rehearsal) stay distinct but muted. The logo is the
+  original vinyl-on-sunburst logo with muted colours and no pick. Mouse-wheel scrolling in the song view broke once because `overscroll-behavior: contain` on the (overflow-x:auto) sheet trapped vertical wheel scroll; only the x axis is contained now.
+- Rehearsal-safe song view: swipe-between-tabs was removed (it fired by accident while playing; tabs
+  are the navigation). The chord sheet has A−/A+ buttons (70–240%, remembered per device in
+  localStorage `sheetFontScale`). Pinch-zoom is blocked only on the sheet (`touch-action: pan-x pan-y`)
+  and horizontal overscroll is disabled while a sheet is shown. We did not add `user-scalable=no`
+  globally (accessibility). The back gesture can't be blocked; it already steps song → list via
+  `useHistoryNav`, so it doesn't leave the app. Rejected: a full "performance mode" toggle (more UI
+  for little gain over the A−/A+ buttons).
+- Full-screen song mode (2026-11-24): a "מסך מלא" button on the song view opens a fixed overlay with
+  one slim bar (exit, prev/next song, title and position) and the scrolling sheet with its sticky
+  transpose / A−/A+ / direction controls. Also requests browser fullscreen and a screen wake lock
+  (both best-effort; iPhone Safari lacks fullscreen, the overlay still covers the page). Esc or the
+  close button exits. It stays on while moving between songs of a playlist. State is local to
+  `SongDetail`, not in history, so the back gesture still goes song → list.
 - Playlists: reusable songs with lyrics/chords/structure/links, ordered playlists, optional event link
 - Identity & access: admin-created personal invite link per member, optional Google attach for
   sign-in from any device, roles admin / member / viewer enforced by RLS

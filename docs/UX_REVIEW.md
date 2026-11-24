@@ -229,6 +229,17 @@ come first.
 - [x] **STY-09: PWA.** Update the manifest colours, list separate `any` and `maskable` icons,
   and add the icon links to `index.html`.
 
+### 🎸 Calm look and rehearsal mode (added 2026-11-24)
+
+- [x] **CALM-01: Quieter palette.** One indigo accent, neutral surfaces, soft shadows, no sunburst.
+- [x] **CALM-02: Calmer logo.** Original vinyl/sunburst with muted colours, pick removed; PNG icons regenerated.
+- [x] **CALM-03: True-black dark mode.**
+- [x] **CALM-04: Remove swipe navigation.** Deleted `useSwipeNav`.
+- [x] **CALM-05: Song font size buttons (A−/A+), pinch-zoom locked on the sheet.**
+- [x] **CALM-06: Full-screen song mode** (exit, prev/next, transpose, font size, direction; wake lock).
+
+Not verified on a real tablet: the pinch/overscroll lock, and the installed PWA icon.
+
 ## Implementation phases
 
 ### Phase A: permissions (PERM-01–03)

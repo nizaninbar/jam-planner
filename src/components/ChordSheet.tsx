@@ -1,18 +1,48 @@
-import { useState } from 'react';
+import { useState, type CSSProperties } from 'react';
 import { parseChordSheet, transposePairs } from '../utils/chordSheet';
 
 interface ChordSheetProps {
   sheet: string;
   dir: 'rtl' | 'ltr';
   onToggleDir: () => void;
+  shift: number;
+  onShiftChange: (shift: number) => void;
+}
+
+const SIZE_KEY = 'sheetFontScale';
+const SIZE_MIN = 0.7;
+const SIZE_MAX = 2.4;
+const BASE_REM = 1.05;
+
+// Fallback for when localStorage is blocked, so the size survives remounts (song change, full screen).
+let memoryScale = 1;
+
+function loadScale(): number {
+  try {
+    const n = Number(localStorage.getItem(SIZE_KEY));
+    return n >= SIZE_MIN && n <= SIZE_MAX ? n : memoryScale;
+  } catch {
+    return memoryScale;
+  }
 }
 
 /** Play-along view: every chord line sits directly above its lyric line. */
-export function ChordSheet({ sheet, dir, onToggleDir }: ChordSheetProps) {
-  // Transposition is a per-viewer, non-persisted setting: the saved sheet is never changed.
-  const [shift, setShift] = useState(0);
+export function ChordSheet({ sheet, dir, onToggleDir, shift, onShiftChange: setShift }: ChordSheetProps) {
+  // Transposition is a per-viewer, non-persisted setting (held by SongDetail): the saved sheet is never changed.
+  // Font size is remembered per device (tablet vs phone), unlike transposition.
+  const [scale, setScale] = useState(loadScale);
+  const resize = (next: number) => {
+    const clamped = Math.min(SIZE_MAX, Math.max(SIZE_MIN, Math.round(next * 10) / 10));
+    setScale(clamped);
+    memoryScale = clamped;
+    try {
+      localStorage.setItem(SIZE_KEY, String(clamped));
+    } catch {
+      // Storage may be unavailable; the size just won't persist.
+    }
+  };
   const pairs = transposePairs(parseChordSheet(sheet), shift);
-  const step = (delta: number) => setShift((s) => (((s + delta + 5) % 12) + 12) % 12 - 5);
+  const step = (delta: number) => setShift((((shift + delta + 5) % 12) + 12) % 12 - 5);
 
   return (
     <div>
@@ -33,11 +63,22 @@ export function ChordSheet({ sheet, dir, onToggleDir }: ChordSheetProps) {
             </button>
           )}
         </div>
+        <div className="sheet-tool-group" role="group" aria-label="גודל גופן">
+          <button type="button" className="icon-btn" onClick={() => resize(scale - 0.1)} aria-label="הקטן גופן" disabled={scale <= SIZE_MIN}>
+            A−
+          </button>
+          <span className="sheet-size" dir="ltr" aria-live="polite">
+            {Math.round(scale * 100)}%
+          </span>
+          <button type="button" className="icon-btn" onClick={() => resize(scale + 0.1)} aria-label="הגדל גופן" disabled={scale >= SIZE_MAX}>
+            A+
+          </button>
+        </div>
         <button type="button" className="sheet-reset" onClick={onToggleDir}>
           {dir === 'rtl' ? 'כיוון: ימין לשמאל' : 'כיוון: שמאל לימין'}
         </button>
       </div>
-      <div className="chord-sheet" dir={dir}>
+      <div className="chord-sheet" dir={dir} style={{ '--sheet-font-size': `${(BASE_REM * scale).toFixed(3)}rem` } as CSSProperties}>
         {pairs.map((pair, i) => (
           <div key={i} className="chord-pair">
             <pre className="chord-line">{pair.chords || ' '}</pre>
