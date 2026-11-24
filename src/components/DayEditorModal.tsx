@@ -1,13 +1,8 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from 'react';
 import type { Availability, AvailabilityStatus, Event, EventType, Member, Playlist } from '../types/band';
 import { getMemberStatus, MONTH_NAMES, toIsoDate } from '../utils/calendar';
+import { EVENT_TYPE_LABELS } from '../utils/events';
 import { getPlaylistForEvent } from '../utils/playlists';
-
-const EVENT_TYPE_LABELS: Record<EventType, string> = {
-  gig: 'הופעה',
-  'rehearsal-guided': 'חזרה מודרכת',
-  'rehearsal-band-only': 'חזרה של הלהקה',
-};
 
 // <input type="datetime-local"> speaks local time without a zone; the DB stores a real instant.
 function toLocalInputValue(iso: string): string {

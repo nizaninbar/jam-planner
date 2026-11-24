@@ -944,6 +944,16 @@ body {
   width: 100%;
 }
 
+.upcoming-item.status-gig {
+  border-inline-start: 5px solid var(--status-event);
+  background-color: var(--tint-event);
+}
+
+.upcoming-item.status-rehearsal {
+  border-inline-start: 5px solid var(--status-rehearsal);
+  background-color: var(--tint-rehearsal);
+}
+
 .list-item-title {
   font-weight: 700;
   overflow-wrap: anywhere;

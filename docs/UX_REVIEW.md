@@ -173,10 +173,11 @@ Ground rules for every item:
 - [x] **UX-26: The loading state is plain "טוען…" text.**
   **Fix:** show a skeleton month grid instead.
 
-- [ ] **UX-27 (optional, ask before building): there's no "what's next" view.**
+- [x] **UX-27 (optional, ask before building): there's no "what's next" view.**
   The most common phone question is "when is the next rehearsal or gig?". A compact
   "האירוע הבא" card above the calendar would answer it. It's on the GOALS roadmap as an
   upcoming-events list.
+  *Done as an "קרובים" tab (`UpcomingView`) rather than a card; a card could still be added later.*
 
 ### 🔐 Permissions (added 2026-10-27)
 

@@ -9,6 +9,7 @@ import { useHistoryNav } from './hooks/useHistoryNav';
 import { useSwipeNav } from './hooks/useSwipeNav';
 import { NoAccessScreen } from './components/NoAccessScreen';
 import { Toast } from './components/Toast';
+import { UpcomingView } from './components/UpcomingView';
 import { PlaylistDetail } from './components/PlaylistDetail';
 import { PlaylistsView } from './components/PlaylistsView';
 import { SongDetail } from './components/SongDetail';
@@ -275,6 +276,15 @@ function App() {
         onSelect={(section) => setView({ section })}
       />
       {view.section === 'calendar' && <Calendar band={band} onDayClick={setSelectedDate} />}
+      {view.section === 'upcoming' && (
+        <UpcomingView
+          band={band}
+          onOpenDay={(date) => {
+            setView({ section: 'calendar' });
+            setSelectedDate(parseIsoDate(date));
+          }}
+        />
+      )}
       {view.section === 'admin' && canManageAccess(account) && <MembersAdminView band={band} />}
       {view.section === 'playlists' &&
         (view.songId ? (

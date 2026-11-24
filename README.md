@@ -30,6 +30,7 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Mark any date as a gig (with a location) or a rehearsal (guided or band-only)
 * Playlists: ordered song lists (optionally tied to an event), with reusable songs carrying lyrics, chords, structure and links
 * Play-along view: a song's chords shown above its lyrics (Hebrew right-to-left supported), with chord transposition (run `supabase/migrate_11_add_song_sheet.sql`)
+* Upcoming events tab: all events from today onward, grouped by month, tap to open the day
 * The header greets the signed-in member by name
 
 * Access control: personal invite links, optional username/password or Google sign-in (see `docs/AUTH.md`), and admin / member / viewer roles enforced by Supabase RLS (see below)

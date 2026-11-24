@@ -33,7 +33,7 @@ Nothing is currently committed; Playlists (v1) shipped. A UI/UX pass is queued i
 `docs/UX_REVIEW.md` (3 phases).
 
 Ideas, not scheduled and unprioritized: member add/rename UI, a middle availability state
-("prefer not"), an upcoming-events list, rehearsal-time suggestions, rehearsal attendance
+("prefer not"), rehearsal-time suggestions, rehearsal attendance
 confirmation, setlist extras, a recordings library.
 
 ## Done
@@ -42,6 +42,10 @@ confirmation, setlist extras, a recordings library.
 - Each member edits their own availability directly on the calendar
 - Shared Supabase backend (no per-browser localStorage)
 - Dates can be marked as a gig (with a location) or a rehearsal (guided or band-only), optionally with a start time
+- Upcoming events: a read-only "קרובים" tab listing every event from today onward, grouped by month
+  (type, date, time, location, playlist); tapping one opens that day in the calendar. Chose a tab
+  over a "next event" card above the calendar so the whole schedule is visible, not just one event.
+  No schema change.
 - Playlists: reusable songs with lyrics/chords/structure/links, ordered playlists, optional event link
 - Identity & access: admin-created personal invite link per member, optional Google attach for
   sign-in from any device, roles admin / member / viewer enforced by RLS

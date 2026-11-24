@@ -1,4 +1,24 @@
-import type { Event } from '../types/band';
+import type { Event, EventType } from '../types/band';
+import { toIsoDate } from './calendar';
+
+export const EVENT_TYPE_LABELS: Record<EventType, string> = {
+  gig: 'הופעה',
+  'rehearsal-guided': 'חזרה מודרכת',
+  'rehearsal-band-only': 'חזרה של הלהקה',
+};
+
+export const EVENT_DISPLAY: Record<EventType, { icon: string; className: string; name: string }> = {
+  gig: { icon: '🎸', className: 'status-gig', name: 'הופעה' },
+  'rehearsal-guided': { icon: '🎤', className: 'status-rehearsal', name: 'חזרה' },
+  'rehearsal-band-only': { icon: '🎶', className: 'status-rehearsal', name: 'חזרה' },
+};
+
+/** Events from `today` ("YYYY-MM-DD") onward, soonest first (untimed events sort before timed ones that day). */
+export function getUpcomingEvents(events: Event[], today: string = toIsoDate(new Date())): Event[] {
+  return events
+    .filter((e) => e.date >= today)
+    .sort((a, b) => a.date.localeCompare(b.date) || (a.time ?? '').localeCompare(b.time ?? ''));
+}
 
 /** How long before an event's start its reminder goes out unless an admin picks another moment. */
 export const DEFAULT_REMINDER_HOURS_BEFORE = 5;
