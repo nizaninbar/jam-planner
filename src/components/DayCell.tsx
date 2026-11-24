@@ -1,3 +1,4 @@
+import { EVENT_DISPLAY } from '../utils/events';
 import { isPast, isToday, MONTH_NAMES, type DayStatus } from '../utils/calendar';
 
 interface DayCellProps {
@@ -5,12 +6,6 @@ interface DayCellProps {
   status: DayStatus;
   onClick?: () => void;
 }
-
-const EVENT_DISPLAY = {
-  gig: { icon: '🎸', className: 'status-gig', name: 'הופעה' },
-  'rehearsal-guided': { icon: '🎤', className: 'status-rehearsal', name: 'חזרה' },
-  'rehearsal-band-only': { icon: '🎶', className: 'status-rehearsal', name: 'חזרה' },
-};
 
 export function DayCell({ date, status, onClick }: DayCellProps) {
   const dayNumber = date.getDate();
