@@ -1,45 +1,36 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
-
 ## Commands
-- `npm install` — install dependencies
-- `npm run dev` — start the Vite dev server
-- `npm run build` — type-check (`tsc -b`) and build to `dist/`
-- `npm run lint` — run oxlint
-- `npm run preview` — serve the production build locally
-
-No test framework is set up yet.
+`npm install` · `npm run dev` (Vite) · `npm run build` (`tsc -b` + build) · `npm run lint` (oxlint) · `npm run preview`. No test framework.
 
 ## Environment
-Requires `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (see `.env.example`) — copy to
-`.env.local` for local dev. In CI these come from the repo secrets `SUPABASE_URL`/
-`SUPABASE_ANON_KEY`, injected in `.github/workflows/deploy.yml`. The anon key is meant to end up in
-the public bundle; Supabase Row Level Security is the actual access control, not key secrecy.
+Needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (see `.env.example`, copy to `.env.local`); CI injects them from repo secrets in `.github/workflows/deploy.yml`. The anon key ships in the public bundle on purpose — Supabase RLS is the access control.
 
 ## Architecture
-React + TypeScript SPA (Vite). RTL Hebrew UI, dark theme (`src/index.css`). Data lives in Supabase
-(Postgres via PostgREST) — see `supabase/schema.sql` for the schema (tables mirror
-`src/types/band.ts` almost 1:1) and its RLS policies (currently open to all, since there's no auth
-yet; that's the seam where auth will later tighten each policy).
+React + TypeScript SPA (Vite), RTL Hebrew UI, mobile-first (use the `mobile-ui-ux` skill for UI work), styles in `src/index.css`. Data in Supabase; schema in `supabase/schema.sql` + `supabase/migrate_NN_*.sql` (RLS: admin-only content after `migrate_08`). Data flows one way:
+- `src/types/band.ts` — domain model: `Band` → `Member[]`, `Event[]` (dated gig/rehearsal, optional location, `time`, `remindAt`, `playlistId`), `Availability[]` (unavailability only; no record = available), `Song[]` (with `Link[]`, optional play-along `sheet`), `Playlist[]` (ordered `entries`; many events can share one).
+- `src/data/bandService.ts` — only caller of Supabase for band data: `getBand(id)` + mutations, each re-fetches `getBand`. Ids from `newId()` (`src/utils/id.ts`), not `crypto.randomUUID()` (missing on non-secure pages, e.g. dev server on a phone). Events live in a table still named `gigs` (renaming a live table wasn't worth the risk).
+- `src/data/authService.ts` — only caller of `supabase.auth` and IAM RPCs; `src/data/pushService.ts` — only caller of push APIs.
+- `src/utils/` — pure logic, not in components: `calendar.ts` (`getDayStatus`, `getMemberStatus`), `playlists.ts`, `events.ts` (default reminder = 5h before start), `permissions.ts` (`canEditContent`, `canEditAvailability`, `canManageAccess`), `chordSheet.ts` (sheet parsing, transposition).
+- `src/App.tsx` — holds `Band` and a `view` state (no router); `AuthState` gates the app (no account → `NoAccessScreen`; admins get `MembersAdminView`). Views pass mutation promises to `apply` (sets band, resolves true/false); `useSaveStatus` drives the save indicator; failures go to `Toast`, only the initial load failing is full-screen. Availability toggles are optimistic. `AppHeader` greets the member (`account.memberId`); `SettingsMenu` holds Google/reminders/theme/sign-out.
+- Calendar: `Calendar.tsx` (visible month, free navigation) → `MonthGrid` → `DayCell` (driven by `getDayStatus`); a day click opens `DayEditorModal` (event + reminder + its playlist).
+- Songs: `SongDetail` is a read view with an admin edit toggle. The `sheet` is plain text whose lines strictly alternate chords/lyrics; `ChordSheet.tsx` renders it with per-viewer transpose and an RTL/LTR toggle (state in `SongDetail`; Hebrew defaults RTL). Legacy `chords`/`lyrics` show when there's no sheet. Spec: `docs/GOALS.md`.
 
-Data flows one direction:
-- `src/types/band.ts` — the domain model: a `Band` has `Member[]`, `Event[]`, and `Availability[]` (member+date unavailability records — absence of a record means available). An `Event` is a dated gig or rehearsal (`EventType`), with an optional `location` and optional start `time` ("HH:MM", column `gigs.start_time`; `src/utils/events.ts` derives the default reminder, 5 hours before the start). Events and availability are band-wide, not scoped to any date range. A `Band` also has `Song[]` (reusable; each with `Link[]` and an optional play-along `sheet` — text whose lines strictly alternate chords/lyrics, parsed by `src/utils/chordSheet.ts` and shown by `ChordSheet.tsx`; legacy `chords`/`lyrics` still show when there's no sheet; run `migrate_11_add_song_sheet.sql`) and `Playlist[]` (ordered `entries` of song id + position, an `Event` optionally points to one playlist via `playlistId`; a playlist can be used by many events).
-- `src/data/supabaseClient.ts` — the Supabase client, built from the env vars above.
-- `src/data/bandService.ts` — `getBand(id)` and the mutation functions (availability, events, songs, links, playlists, playlist reordering) are the only functions that talk to Supabase; each mutation re-fetches `getBand`. New row ids come from `newId()` (`src/utils/id.ts`), not `crypto.randomUUID()`, which is missing on non-secure pages like the dev server opened from a phone; everything else works with the plain `Band` shape and doesn't know or care where the data comes from. (Events are stored in a table still named `gigs` — renaming a live table wasn't worth the risk; only the app-level name changed.)
-- `src/utils/playlists.ts` — pure helpers: ordering, playlists containing a song, playlist for an event, http(s) URL check.
-- `src/utils/calendar.ts` — pure functions deriving what a day looks like: `getDayStatus` (event / all-clear / missing-members) and `getMemberStatus`. Business logic lives here, not in components.
-- `src/components/Calendar.tsx` — owns which month is currently visible (defaults to today) and renders one `MonthGrid` with prev/next/today navigation; free to browse any month, forward or back. Each `MonthGrid` renders `DayCell`s driven entirely by `getDayStatus`; clicking a day opens `DayEditorModal` (which also shows/creates/links the event's playlist).
-- `src/App.tsx` — holds the `Band` and a simple `view` state (no router): `NavTabs` switches between the calendar, `PlaylistsView`/`PlaylistDetail` and `SongsView`/`SongDetail`. Views call the service and hand the resulting promise to `apply`, which sets the band and resolves to `true`/`false` (saved/failed); song and playlist fields feed that into `useSaveStatus` (`src/hooks/`) for the "שומר…/נשמר ✓" indicator. The header's `SettingsMenu` holds the Google-attach and reminders rows, theme toggle and sign-out (dot badge while something is pending); `Icon.tsx` is the shared inline-SVG icon set; `CalendarSkeleton` is the loading state. `SongDetail` is a read view by default with an edit toggle for admins. Only the initial load failing shows the full-screen error; mutation failures go to the `Toast` (`aria-live`, auto-dismiss). Availability toggles are optimistic (`patchAvailability`, reverted on error, the member's button disabled while pending).
+Roles: only admins edit content; members edit only their own availability; viewers read-only. Enforced by RLS, mirrored in `permissions.ts` to hide controls.
 
-Identity & access: `src/data/authService.ts` is the only caller of `supabase.auth` and the IAM RPCs (the auth twin of `bandService.ts`); `src/utils/permissions.ts` holds the pure role checks (`canEditContent`, `canEditAvailability`, `canManageAccess`) used to show/hide controls. Only admins edit content (events, reminders, songs, links, playlists); members edit just their own availability; viewers are read-only. The real enforcement is RLS in `supabase/migrate_06_add_iam.sql`, tightened to admin-only content by `migrate_08_admin_only_content.sql` (the open policies in `schema.sql` are dropped by it). Users sign in via a per-member invite link (`#/invite/<token>`, claimed through an anonymous session in `App.tsx`'s `loadSession`), then optionally set a username+password (stored as a synthetic email `<username>@users.jam-planner.app`, or the address itself if it contains `@`; set by the `set-credentials` edge function (service role): it creates a confirmed user, moves the member's access rows (`member_accounts`, `push_subscriptions`, invite columns) to it and deletes the anonymous user, then the client signs in as the new user — upgrading an anonymous user in place (`auth.updateUser`, `admin.updateUserById`) fails on Supabase; `CredentialsForm`, shown in `SettingsMenu` and on `NoAccessScreen` for sign-in) or attach Google. `App.tsx` gates on `AuthState`: no account shows `NoAccessScreen`; admins get the `MembersAdminView` tab. First admin: `supabase/bootstrap_first_admin.sql`. Dashboard needs anonymous sign-ins, manual linking, the Google provider and the Email provider enabled; deploy `supabase functions deploy set-credentials` and run `migrate_09_admin_accounts_login.sql`.
+## Detail lives in docs (read the relevant one before changing that area)
+- `docs/AUTH.md` — sign-in (invite link, username+password via `set-credentials` edge function, Google), setup, troubleshooting. First admin: `supabase/bootstrap_first_admin.sql`.
+- `docs/REMINDERS.md` — Web Push reminders, `send-reminders` function, pg_cron, setup/testing.
+- `docs/GOALS.md` — product goals, Playlists and play-along sheet specs; read before proposing features.
+- `docs/UX_REVIEW.md` — UI/UX backlog (UX-01…UX-27) with checkboxes; tick items off as they land.
+- `docs/TECHNICAL.md`, `docs/BACKUP.md` — technical notes, backups.
+- Shipping: `/ship` (`scripts/ship.ps1`, GitHub account `nizaninbar`, squash-merges to `main`). It does NOT run SQL or deploy Supabase functions.
+- The app renders one band (`getBand('main-band')`) though the model supports many.
 
-Reminders: an `Event` has an optional `remindAt` (set in `DayEditorModal`, saved via `setEventReminder`; defaults to 5 hours before the event's time when it has one, and the push body includes the time — run `migrate_10_add_event_time.sql` and redeploy `send-reminders`). Delivery is Web Push: `src/data/pushService.ts` (the only caller of the push APIs) subscribes the device into `push_subscriptions`; `supabase/functions/send-reminders` (run by pg_cron every 5 min) sends due reminders. PWA files live in `public/`. Setup and testing: `docs/REMINDERS.md`.
-
-Sign-in methods (invite link, username+password, Google), the `set-credentials` flow, setup and troubleshooting: `docs/AUTH.md`. Shipping: `/ship` runs `scripts/ship.ps1` (as GitHub account `nizaninbar`, squash-merges to `main`; it does not deploy Supabase functions or run SQL).
-
-Product goals and the Playlists spec are in `docs/GOALS.md` — read it before proposing features.
-The open UI/UX backlog (IDs UX-01…UX-27, in phases, with checkboxes) is in `docs/UX_REVIEW.md` —
-work through it phase by phase and tick items off as they land.
-
-The app currently renders a single band (`App.tsx` calls `getBand('main-band')`) even though the data model already supports multiple bands — see README's Future Vision and `docs/GOALS.md` for the roadmap (self-service editing, the Supabase migration, free calendar navigation and Playlists are done).
+## Documentation is the memory between sessions
+Each feature is built in a separate session, so the docs are all the next session knows. **Before every `/ship` or commit, update the docs in the same PR:**
+- `CLAUDE.md` — only the concise map (new files, data flow, roles). Put long detail in `docs/` and link it; don't let this file grow.
+- `docs/GOALS.md` — the feature's spec, decisions, Done/out-of-scope. `README.md` — user-facing Done list.
+- Topic docs (`AUTH.md`, `REMINDERS.md`, …) when touched; tick `UX_REVIEW.md` items.
+- Schema change: new idempotent `supabase/migrate_NN_*.sql` (never edit applied ones), document it, and tell the user to run it / deploy any edge function.
+Record the non-obvious *why* (rejected alternatives, constraints), not just what.
