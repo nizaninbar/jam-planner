@@ -69,8 +69,8 @@ confirmation, setlist extras, a recordings library.
   event. Deleting the event unlinks the playlist; it is not deleted.
 - **Song** - a standalone entity, reusable across playlists: `name`, `lyrics`, `chords`,
   `structure` (a text description of the song's structure), and a list of links. Edit it once and
-  it changes everywhere it appears. Chords are plain text for now; how they're displayed is
-  deferred.
+  it changes everywhere it appears. A song also has an optional play-along `sheet` (see below);
+  the older separate `chords`/`lyrics` fields stay and are shown when a song has no sheet.
 - **Link** - belongs to a song, managed manually, any number per song: `description` (e.g.
   "Original", "Our rehearsal recording 2026-10") plus a `url`.
 - **Playlist-song connection** - many-to-many: playlist + song + `position`. Every playlist is
@@ -82,15 +82,30 @@ All song fields except `name` are optional. URLs are validated as http(s).
 
 ### UX sketch
 Playlists list -> playlist detail (ordered songs, reorder, add an existing song or create a new
-one) -> song view/edit (properties and links). A song page shows which playlists it's in. From an
+one; the linked events come below the songs) -> song view/edit (properties and links). A song page shows which playlists it's in. From an
 event's day editor, show/create/link that event's playlist. Mobile-first and RTL.
 
+### Play-along sheet (chords above lyrics) — Done
+- **Format**: one text block (`songs.sheet`, `migrate_11_add_song_sheet.sql`) whose lines strictly
+  alternate: line 1 chords, line 2 lyrics, line 3 chords, ... Position alone decides the type (no
+  chord detection). Two chord lines in a row = an empty lyrics line between them; an empty chord
+  line = lyrics with no chords. Rendered monospace so chords stay above their words.
+- **Direction**: a sheet containing Hebrew letters is laid out right-to-left as a whole (chords
+  count from the right, so the first chord is over the first word); otherwise left-to-right. A
+  button flips it manually (view and editor share it; not saved, resets per song).
+- **Editing**: admins edit it in `SongDetail`'s edit mode; a one-tap button interleaves the legacy
+  chords and lyrics fields into a starting sheet.
+- **Transposition**: −/+ semitone buttons above the sheet shift every chord (root and slash bass),
+  per viewer and not saved; the stored sheet is never changed. Chords keep their column so they stay
+  above their words. Sharps/flats follow the sheet's own accidentals (neutral guitar spelling
+  otherwise). Logic: `transposePairs` in `src/utils/chordSheet.ts`.
+
 ### Out of scope for v1
-Audio upload/playback, chord display and transposition, per-member parts, lyrics import.
+Audio upload/playback, per-member parts, lyrics import, a saved per-song key.
 
 ### Implementation notes
 - **Types** (`src/types/band.ts`): `Link { id, description, url }`,
-  `Song { id, name, lyrics?, chords?, structure?, links: Link[] }`,
+  `Song { id, name, lyrics?, chords?, structure?, sheet?, links: Link[] }`,
   `Playlist { id, name, description, entries: { songId, position }[] }`. `Band` gains
   `songs` and `playlists`.
 - **Schema** (new additive migration, like `supabase/migrate_01_*`):
