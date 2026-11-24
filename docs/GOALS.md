@@ -58,7 +58,7 @@ confirmation, setlist extras, a recordings library.
   globally (accessibility). The back gesture can't be blocked; it already steps song → list via
   `useHistoryNav`, so it doesn't leave the app. Rejected: a full "performance mode" toggle (more UI
   for little gain over the A−/A+ buttons).
-- Full-screen song mode (2026-11-24): a "מסך מלא" button on the song view opens a fixed overlay with
+- Full-screen song mode (2026-11-24): a "מסך מלא" button in the sheet toolbar (beside transpose, so no scrolling to find it) opens a fixed overlay with
   one slim bar (exit, prev/next song, title and position) and the scrolling sheet with its sticky
   transpose / A−/A+ / direction controls. Also requests browser fullscreen and a screen wake lock
   (both best-effort; iPhone Safari lacks fullscreen, the overlay still covers the page). Esc or the
