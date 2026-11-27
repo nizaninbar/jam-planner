@@ -62,6 +62,7 @@ export type Role = 'admin' | 'member' | 'viewer';
 /** What the signed-in user is allowed to be in the band; memberId is absent for e.g. a viewer. */
 export interface Account {
   bandId: string;
+  bandName: string;
   role: Role;
   memberId?: string;
 }

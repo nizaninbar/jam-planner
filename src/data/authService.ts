@@ -70,16 +70,17 @@ export async function claimInvite(token: string): Promise<void> {
   if (error) fail('claim invite', error);
 }
 
-export async function getMyAccount(): Promise<Account | null> {
-  const { data, error } = await supabase
-    .from('member_accounts')
-    .select('band_id, member_id, role')
-    .maybeSingle();
+/** One account per band the user belongs to (a player in two bands has two). */
+export async function getMyAccounts(): Promise<Account[]> {
+  const { data, error } = await supabase.from('member_accounts').select('band_id, member_id, role, bands(name)');
   if (error) fail('load account', error);
-  if (!data) {
-    return null;
-  }
-  return { bandId: data.band_id, role: data.role as Role, memberId: data.member_id ?? undefined };
+  return (data ?? [])
+    .map((row) => {
+      const band = row.bands as { name: string } | { name: string }[] | null;
+      const bandName = (Array.isArray(band) ? band[0]?.name : band?.name) ?? row.band_id;
+      return { bandId: row.band_id, bandName, role: row.role as Role, memberId: row.member_id ?? undefined };
+    })
+    .sort((a, b) => a.bandName.localeCompare(b.bandName, 'he'));
 }
 
 export interface LoginMethods {

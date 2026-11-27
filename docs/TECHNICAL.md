@@ -56,9 +56,25 @@ embed under `bands` ambiguous (PGRST201). `bandService.ts`'s query disambiguates
 `members!members_band_id_fkey(id,name)`, pointing PostgREST at the direct FK instead of letting it
 guess.
 
-The data model already supports multiple bands (each with its own members/events/availability),
-but the app currently only ever renders one (`App.tsx` hardcodes `getBand('main-band')`).
-Multi-band UI (e.g. a band switcher) isn't built yet.
+## Multiple bands
+Each band has its own members, events, availability, songs, playlists and links. A player who plays
+in two bands is one login with **two `member_accounts` rows** (PK `(user_id, band_id)`, `migrate_13`),
+each pointing at that band's own `members` row and role. Member ids are global primary keys, so a
+second band's members need distinct ids (convention: `<band-id>-<name>`).
+
+Decisions (and rejected alternatives):
+- **Availability stays per band.** Rejected: a shared per-person availability (needs a `people` table
+  linking member rows, and a cross-band conflict view). Players enter a day unavailable once per band.
+- **No `people` table.** The login (`auth.users`) is the person; `member_accounts` links it to each band.
+- **Bands are created in SQL** (`supabase/bootstrap_new_band.sql`), not in the UI - rare, and an in-app
+  flow would need new RLS for who may create bands.
+- `claim_invite` lets a signed-in user join another band (it only refuses a second account in the
+  *same* band). An existing player is added by opening the new band's invite link while signed in;
+  `loadSession` then opens the band that link just added.
+- The active band is `App.tsx` state, remembered per device in `localStorage` (`jam-planner.band`);
+  switching resets the view to the calendar and reloads via `getBand`.
+- Reminders: `send-reminders` finds a band's devices through `member_accounts`, so one device
+  (one `push_subscriptions` row) gets reminders from every band its user belongs to.
 
 ## Data flow
 - `src/data/supabaseClient.ts` — creates the Supabase client from env vars.

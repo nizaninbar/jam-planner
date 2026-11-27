@@ -1,7 +1,7 @@
 # Sign-in methods
 
 Three ways in, all ending in the same thing: a Supabase auth user with a `member_accounts` row (band,
-member, role). Roles and RLS are unchanged — see `supabase/migrate_06_add_iam.sql` and
+member, role). A login may have several (one per band, `migrate_13`); an existing user joins another band by opening that band's invite link while signed in. Roles and RLS are unchanged — see `supabase/migrate_06_add_iam.sql` and
 `migrate_08_admin_only_content.sql`.
 
 | Method | How it starts | Can sign in again later? |

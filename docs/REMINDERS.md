@@ -65,5 +65,5 @@ within ~5 minutes of the chosen time.
   `CRON_SECRET` doesn't match the vault secret `reminders_cron_secret`; no rows = `pg_net` or the job
   isn't set up (`select * from cron.job;`, `cron.job_run_details`).
 
-Limits: reminders go to every subscribed device of the band; a device that hasn't enabled
+Limits: reminders go to every subscribed device of every user with access to the event's band (via `member_accounts`, so players in two bands get both; redeploy `send-reminders` after `migrate_13`); a device that hasn't enabled
 notifications gets nothing. Editing the reminder time re-arms an already-sent reminder.

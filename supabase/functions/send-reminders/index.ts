@@ -125,10 +125,12 @@ async function handleCron(): Promise<Response> {
     if (!claimed || claimed.length === 0) {
       continue;
     }
-    const { data: subs } = await supabase
-      .from('push_subscriptions')
-      .select('endpoint,p256dh,auth')
-      .eq('band_id', ev.band_id);
+    // Devices of every user with access to the event's band (a player in two bands gets both).
+    const { data: accounts } = await supabase.from('member_accounts').select('user_id').eq('band_id', ev.band_id);
+    const userIds = (accounts ?? []).map((a) => a.user_id as string);
+    const { data: subs } = userIds.length
+      ? await supabase.from('push_subscriptions').select('endpoint,p256dh,auth').in('user_id', userIds)
+      : { data: [] };
     const [y, m, d] = (ev.date as string).split('-');
     const at = ev.start_time ? ` · 🕐 ${(ev.start_time as string).slice(0, 5)}` : '';
     const where =ev.location ? ` · 📍 ${ev.location}` : '';

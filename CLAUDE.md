@@ -26,7 +26,7 @@ Roles: only admins edit content; members edit only their own availability; viewe
 - `docs/UX_REVIEW.md` — UI/UX backlog (UX-01…UX-27) with checkboxes; tick items off as they land.
 - `docs/TECHNICAL.md`, `docs/BACKUP.md` — technical notes, backups.
 - Shipping: `/ship-prod` (`scripts/ship.ps1`, GitHub account `nizaninbar`, squash-merges to `main`). It does NOT run SQL or deploy Supabase functions.
-- The app renders one band (`getBand('main-band')`) though the model supports many.
+- Multi-band (`migrate_13`, spec in `docs/GOALS.md`): a login has one `member_accounts` row per band (PK `(user_id, band_id)`); `getMyAccounts()` → `App.tsx` shows the remembered/first band and `AppHeader` has a band `<select>` when there are 2+. Everything else (members, availability, events, songs) is strictly per band; a player in two bands has a member row in each. New bands are created in SQL (`supabase/bootstrap_new_band.sql`), not in the app.
 
 ## Documentation is the memory between sessions
 Each feature is built in a separate session, so the docs are all the next session knows. **Before every `/ship-prod` or commit, update the docs in the same PR:**
