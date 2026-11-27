@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { BandLinks } from './components/BandLinks';
 import { Calendar } from './components/Calendar';
@@ -18,7 +18,7 @@ import {
   attachGoogle,
   attachPassword,
   claimInvite,
-  getMyAccount,
+  getMyAccounts,
   getLoginMethods,
   hasSession,
   type LoginMethods,
@@ -55,18 +55,39 @@ type View = { section: Section; playlistId?: string; songId?: string; fromPlayli
 type AuthState =
   | { status: 'loading' }
   | { status: 'none'; message: string | null; signedIn: boolean }
-  | { status: 'ready'; account: Account; methods: LoginMethods };
+  | { status: 'ready'; account: Account; accounts: Account[]; methods: LoginMethods };
 
 interface Session {
   auth: AuthState;
   band?: Band;
 }
 
-// Claims an invite from the URL (if any), then resolves who the user is and loads their band.
+const BAND_KEY = 'jam-planner.band';
+
+function rememberedBandId(): string | null {
+  try {
+    return localStorage.getItem(BAND_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function rememberBandId(bandId: string) {
+  try {
+    localStorage.setItem(BAND_KEY, bandId);
+  } catch {
+    // Blocked storage only costs us the remembered choice.
+  }
+}
+
+// Claims an invite from the URL (if any), then resolves who the user is and loads their band: the band
+// the invite just added, else the last one used on this device, else the first.
 async function loadSession(oauthError: string | null, inviteToken: string | null): Promise<Session> {
   let message = oauthError;
+  let knownBandIds: string[] = [];
   if (inviteToken) {
     try {
+      knownBandIds = (await hasSession()) ? (await getMyAccounts()).map((a) => a.bandId) : [];
       await claimInvite(inviteToken);
     } catch (err) {
       message = `ההזמנה לא נקלטה: ${(err as Error).message}`;
@@ -75,12 +96,18 @@ async function loadSession(oauthError: string | null, inviteToken: string | null
   if (!(await hasSession())) {
     return { auth: { status: 'none', message, signedIn: false } };
   }
-  const account = await getMyAccount();
-  if (!account) {
+  const accounts = await getMyAccounts();
+  if (accounts.length === 0) {
     return { auth: { status: 'none', message, signedIn: true } };
   }
+  const remembered = rememberedBandId();
+  const account =
+    accounts.find((a) => inviteToken && !knownBandIds.includes(a.bandId)) ??
+    accounts.find((a) => a.bandId === remembered) ??
+    accounts[0];
+  rememberBandId(account.bandId);
   const [band, methods] = await Promise.all([getBand(account.bandId), getLoginMethods()]);
-  return { auth: { status: 'ready', account, methods }, band };
+  return { auth: { status: 'ready', account, accounts, methods }, band };
 }
 
 // Applies an availability change locally (absence of a record means available).
@@ -101,6 +128,7 @@ function App() {
   const dismissToast = useCallback(() => setToast(null), []);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [view, setView] = useState<View>({ section: 'calendar' });
+  const wantedBandId = useRef<string | null>(null);
 
   useEffect(() => {
     bootstrap ??= loadSession(takeOAuthError(), takeInviteToken());
@@ -122,6 +150,29 @@ function App() {
       .then((session) => {
         setAuth(session.auth);
         setBand(session.band ?? null);
+      })
+      .catch((err: Error) => setError(err.message));
+  };
+
+  const handleSwitchBand = (bandId: string) => {
+    if (auth.status !== 'ready' || bandId === auth.account.bandId) {
+      return;
+    }
+    const account = auth.accounts.find((a) => a.bandId === bandId);
+    if (!account) {
+      return;
+    }
+    rememberBandId(bandId);
+    wantedBandId.current = bandId;
+    setBand(null);
+    setSelectedDate(null);
+    setView({ section: 'calendar' });
+    setAuth({ ...auth, account });
+    getBand(bandId)
+      .then((loaded) => {
+        if (wantedBandId.current === bandId) {
+          setBand(loaded);
+        }
       })
       .catch((err: Error) => setError(err.message));
   };
@@ -248,6 +299,8 @@ function App() {
       <AppHeader
         bandId={band.id}
         bandName={band.name}
+        bands={auth.accounts.map((a) => ({ id: a.bandId, name: a.bandName }))}
+        onSwitchBand={handleSwitchBand}
         userName={band.members.find((m) => m.id === account.memberId)?.name}
         methods={auth.methods}
         onAttachGoogle={() => handleGoogle(attachGoogle)}

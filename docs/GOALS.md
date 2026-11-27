@@ -11,11 +11,12 @@ is the first feature; more are added one at a time.
 | Availability calendar (who's free, gigs, rehearsals) | Done - unchanged |
 | Playlists (songs, links, ordered lists, event link) | Done |
 | Band-wide links (header strip) | Done |
+| Multiple bands (header switcher; players in both) | Done - run `migrate_13` |
 | Anything beyond that | TBD |
 
 ## Audience
-The author's own band first. The data model already supports multiple bands, but multi-band UI and
-self-signup are not goals right now.
+The author's own band first, plus a second band that shares some players (multi-band, see
+`docs/TECHNICAL.md#multiple-bands`). Self-signup is not a goal right now.
 
 ## Principles
 - The calendar stays a first-class, visual view.
@@ -25,7 +26,8 @@ self-signup are not goals right now.
 - Small increments, real feedback from the band.
 
 ## Non-goals (for now)
-- Multi-band self-signup.
+- Multi-band self-signup / in-app band creation (bands are added with SQL).
+- Cross-band availability sharing or conflict warnings (availability is per band).
 - A native app.
 - Hosting or streaming audio - recordings are links only.
 

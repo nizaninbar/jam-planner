@@ -209,6 +209,23 @@ body {
   font-weight: 500;
 }
 
+.band-switcher {
+  appearance: none;
+  border: 0;
+  font: inherit;
+  cursor: pointer;
+  min-height: 44px;
+  padding-inline-end: 32px;
+  background-image: linear-gradient(45deg, transparent 50%, #fff 50%), linear-gradient(135deg, #fff 50%, transparent 50%);
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  background-position: calc(100% - 17px) 55%, calc(100% - 12px) 55%;
+}
+
+.band-switcher option {
+  color: initial;
+}
+
 .legend-wrap {
   position: relative;
 }

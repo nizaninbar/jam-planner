@@ -35,6 +35,7 @@ The full goals, principles, non-goals and the Playlists spec live in [docs/GOALS
 * Band-wide links (name + URL) in a collapsible strip under the header, admins edit (run `supabase/migrate_12_band_links.sql`)
 * Full-screen song mode for playing: prev/next song, transpose, font size, screen stays awake
 * The header greets the signed-in member by name
+* Multiple bands: a header switcher for players in more than one band, each band fully separate (run `supabase/migrate_13_multi_band.sql`, add a band with `supabase/bootstrap_new_band.sql`)
 
 * Access control: personal invite links, optional username/password or Google sign-in (see `docs/AUTH.md`), and admin / member / viewer roles enforced by Supabase RLS (see below)
 
