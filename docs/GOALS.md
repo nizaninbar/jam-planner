@@ -121,7 +121,9 @@ event's day editor, show/create/link that event's playlist. Mobile-first and RTL
 - **Editing**: admins edit it in `SongDetail`'s edit mode; a one-tap button interleaves the legacy
   chords and lyrics fields into a starting sheet.
 - **Transposition**: −/+ semitone buttons above the sheet shift every chord (root and slash bass),
-  per viewer and not saved; the stored sheet is never changed. Chords keep their column so they stay
+  per viewer and not saved; the stored sheet is never changed. The counter shows the shift in
+  tones (shift ÷ 2: `+0.5` = one semitone, `-1.5` = three semitones down) since players think in
+  tones; state and logic stay in semitones. Chords keep their column so they stay
   above their words. Sharps/flats follow the sheet's own accidentals (neutral guitar spelling
   otherwise). Logic: `transposePairs` in `src/utils/chordSheet.ts`.
 

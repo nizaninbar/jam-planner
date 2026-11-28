@@ -55,7 +55,7 @@ export function ChordSheet({ sheet, dir, onToggleDir, shift, onShiftChange: setS
             −
           </button>
           <span className="sheet-shift" dir="ltr" aria-live="polite">
-            {shift > 0 ? `+${shift}` : shift}
+            {shift > 0 ? `+${shift / 2}` : shift / 2}
           </span>
           <button type="button" className="icon-btn" onClick={() => step(1)} aria-label="חצי טון למעלה">
             +
